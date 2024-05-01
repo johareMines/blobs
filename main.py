@@ -5,6 +5,7 @@ from enum import Enum
 
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
+DEVELOPER = True
 
 def monteCarlo(sign, skew=(0.0, 0.0)):
     i, j, k, l = [random.random() for _ in range(4)]
@@ -27,7 +28,32 @@ def monteCarlo(sign, skew=(0.0, 0.0)):
 
     return (i, j)
     
+
+
+class Drawable:
+    def draw(self):
+        raise NotImplementedError("Class must implement draw()")
+
+class Food:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+        
+
+class FoodHerbivore(Food, Drawable):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.size = random.randint(3, 5)
+        self.color = (0, 220, 0)
+        self.rooted = True
     
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, self.color, (self.x, self.y), self.size)
+    
+
+
 
 class Organism:
     def __init__(self, x, y, size, color, maxSpeed=0.4):
@@ -57,7 +83,6 @@ class Organism:
         dy = self.destY - self.y
         dist = math.sqrt(dx**2 + dy**2)
 
-        # self.calcSpeed() 
         if dist <= self.speed:
             self.x = self.destX
             self.y = self.destY
@@ -83,6 +108,49 @@ class Organism:
 
     # Check desired move speed
     def calcSpeed(self):
+        raise NotImplementedError("Parent class method must be overwritten")
+
+
+    class walkTypes(Enum):
+        RANDOM = "RANDOM"
+
+    def randomWalk(self):
+        raise NotImplementedError("Parent class method must be overwritten")
+        
+
+    def move(self):
+        velVector = (0, 0)
+        # Select Walk
+        if self.walkType == self.walkTypes.RANDOM:
+            velVector = self.randomWalk()
+          
+
+        # Apply change to existing destination
+        self.destX += velVector[0]
+        self.destY += velVector[1]
+
+        self.calcBoundaries() 
+
+        self.calcDest()
+
+    
+    def draw(self, screen):
+        pygame.draw.circle(screen, self.color, (self.x, self.y), self.size)
+        pygame.draw.circle(screen, BLACK, (self.x, self.y), self.size, 2)
+
+
+        if DEVELOPER:
+            pygame.draw.circle(screen, BLACK, (self.destX, self.destY), 2)
+
+        
+        # spriteWidth, spriteHeight = self.scaledImage.get_rect().size
+
+        # screen.blit(self.scaledImage, (self.x - spriteWidth / 2, self.y - spriteHeight / 2))
+
+
+class Blob(Organism):
+    
+    def calcSpeed(self):
         speedGoal = self.speed
 
         if self.walkType == self.walkTypes.RANDOM:
@@ -102,11 +170,7 @@ class Organism:
             speedGoal = 0
         
         self.speed = speedGoal
-
-
-    class walkTypes(Enum):
-        RANDOM = "RANDOM"
-
+    
     def randomWalk(self):
         # Modify speed
         self.calcSpeed()
@@ -116,41 +180,12 @@ class Organism:
         vect = tuple(i * 4 for i in vect)
         return (vect)
 
-    def move(self):
-        
-        velVector = (0, 0)
-        # Select Walk
-        if self.walkType == self.walkTypes.RANDOM:
-            velVector = self.randomWalk()
-        
-
-
-        # Apply change to existing destination
-        self.destX += velVector[0]
-        self.destY += velVector[1]
-
-        self.calcBoundaries()
-
-        self.calcDest()
-
-    
-    def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (self.x, self.y), self.size)
-        pygame.draw.circle(screen, BLACK, (self.x, self.y), self.size, 2)
-
-        pygame.draw.circle(screen, BLACK, (self.destX, self.destY), 2)
-
-        
-        spriteWidth, spriteHeight = self.scaledImage.get_rect().size
-
-        screen.blit(self.scaledImage, (self.x - spriteWidth / 2, self.y - spriteHeight / 2))
-
-
-
-
 class Simulation:
     SCREEN_WIDTH = 0
     SCREEN_HEIGHT = 0
+
+    ORGANISMS = []
+    FOODS = []
     def __init__(self, width=1920, height=1080):
         pygame.init()
         # Windowed
@@ -162,15 +197,16 @@ class Simulation:
         self.screen = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.FULLSCREEN, display=0)
 
         self.clock = pygame.time.Clock()
-        self.organisms = []
-
-    def add_organism(self, organism):
-        self.organisms.append(organism)
+        
 
     def draw_organisms(self):
         self.screen.fill((255, 255, 255))  # Clear the screen
-        for organism in self.organisms:
+        for organism in Simulation.ORGANISMS:
             organism.draw(self.screen)
+        
+        for food in Simulation.FOODS:
+            food.draw(self.screen)
+            
         pygame.display.flip()
 
     def run(self):
@@ -180,7 +216,7 @@ class Simulation:
                 if event.type == pygame.QUIT:
                     running = False
 
-            for organism in self.organisms:
+            for organism in Simulation.ORGANISMS:
                 organism.move()
 
             self.draw_organisms()
@@ -191,6 +227,11 @@ class Simulation:
 if __name__ == "__main__":
     simulation = Simulation()
     for _ in range(10):
-        organism = Organism(random.uniform(0.0, float(simulation.SCREEN_WIDTH)), random.uniform(0.0, float(simulation.SCREEN_HEIGHT)), 10, (255, 0, 0))
-        simulation.add_organism(organism)
+        blob = Blob(random.uniform(0.0, float(simulation.SCREEN_WIDTH)), random.uniform(0.0, float(simulation.SCREEN_HEIGHT)), 10, (255, 0, 0))
+        Simulation.ORGANISMS.append(blob)
+    
+    for _ in range(20):
+        foodHerbivore = FoodHerbivore(random.uniform(0.0, float(Simulation.SCREEN_WIDTH)), random.uniform(0.0, float(Simulation.SCREEN_HEIGHT)))
+        Simulation.FOODS.append(foodHerbivore)
+
     simulation.run()
