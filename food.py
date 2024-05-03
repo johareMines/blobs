@@ -19,6 +19,6 @@ class FoodHerbivore(Food, Drawable):
         self.rooted = True
     
 
-    def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (self.x, self.y), self.size)
-        pygame.draw.circle(screen, Constants.BLACK, (self.x, self.y), self.size, 1)
+    def draw(self):
+        pygame.draw.circle(Constants.SCREEN, self.color, (self.x, self.y), self.size)
+        pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.x, self.y), self.size, 1)

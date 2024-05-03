@@ -136,20 +136,6 @@ class Simulation:
         self.clock = pygame.time.Clock()
 
         Constants.BACKGROUND = Background(85, 50)
-        
-
-    def draw_organisms(self):
-        Constants.SCREEN.fill((255, 255, 255))  # Clear the screen
-
-        Constants.BACKGROUND.draw()
-
-        for organism in Constants.ORGANISMS:
-            organism.draw(Constants.SCREEN)
-        
-        for food in Constants.FOODS:
-            food.draw(Constants.SCREEN)
-
-        pygame.display.flip()
 
     def run(self):
         running = True
@@ -157,11 +143,17 @@ class Simulation:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+            
+            Constants.SCREEN.fill((255, 255, 255))  # Clear the screen
+            Constants.BACKGROUND.draw()
 
             for organism in Constants.ORGANISMS:
-                organism.move()
+                organism.update()
+            
+            for food in Constants.FOODS:
+                food.draw()
 
-            self.draw_organisms()
+            pygame.display.flip() # Update display
             self.clock.tick(165)  # FPS Limit
 
         pygame.quit()

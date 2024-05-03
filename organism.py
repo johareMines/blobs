@@ -22,36 +22,15 @@ class Organism:
 
         self.walkType = self.walkTypes.RANDOM
 
-        spriteImage = pygame.image.load("images/blob.png")
+        spriteImage = pygame.image.load("images/Small.png")
         spriteImage = spriteImage.convert_alpha()
 
-        scaledWidth = 109
-        scaledHeight = 90
+        scaledWidth = 72
+        scaledHeight = 72
 
         self.scaledImage = pygame.transform.scale(spriteImage, (scaledWidth, scaledHeight))
-
-
-    # Calc movement to next destination and execute
-    def calcDest(self):
-        dx = self.destX - self.x
-        dy = self.destY - self.y
-        dist = math.sqrt(dx**2 + dy**2)
-
-        if dist <= self.speed:
-            self.x = self.destX
-            self.y = self.destY
-        else:
-            velX = dx / dist * self.speed
-            velY = dy / dist * self.speed
-
-            self.x += velX
-            self.y += velY
-
-    def calcBestMovementType(self):
-        if self.hunger <= self.hungerThreshold:
-            self.walkType = self.walkTypes.FORRAGE
-        else:
-            self.walkType = self.walkTypes.RANDOM
+        
+        
 
     # Ensure organism doesn't leave map
     def calcBoundaries(self):
@@ -91,47 +70,37 @@ class Organism:
     def calcHungerRate(self):
         raise NotImplementedError("Parent class method must be overwritten")
 
+    def calcBestMovementType(self):
+        raise NotImplementedError("Parent class method must be overwritten")
+    
+    def move(self):
+        raise NotImplementedError("Parent class method must be overwritten")
+    
+    
     def update(self):
         self.hunger -= self.calcHungerRate()
         if self.hunger < 0.0:
             self.hunger = 0.0
 
+        if self.hunger > 100.0:
+            self.hunger = 100.0
+
         # Consume self if too hungry
         if self.hunger == 0.0:
             self.size -= 1
-            self.hunger += 3
+            self.hunger += 5
 
-        
-        self.calcBestMovementType()
+        self.move()
+        self.draw()
 
-    def move(self):
-        velVector = (0, 0)
 
-        self.update()
-
-        # Update dest based on walk
-        if self.walkType == self.walkTypes.RANDOM:
-            velVector = self.randomWalk()
-        elif self.walkType == self.walkTypes.FORRAGE:
-            velVector = self.forageWalk()
-          
-
-        # Apply change to existing destination
-        self.destX = velVector[0]
-        self.destY = velVector[1]
-
-        self.calcBoundaries() 
-
-        self.calcDest()
-
-    
-    def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (self.x, self.y), self.size)
-        pygame.draw.circle(screen, Constants.BLACK, (self.x, self.y), self.size, 2)
+    def draw(self):
+        pygame.draw.circle(Constants.SCREEN, self.color, (self.x, self.y), self.size)
+        pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.x, self.y), self.size, 2)
 
 
         if Constants.DEVELOPER:
-            pygame.draw.circle(screen, Constants.BLACK, (self.destX, self.destY), 2)
+            pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.destX, self.destY), 2)
 
         
         # spriteWidth, spriteHeight = self.scaledImage.get_rect().size

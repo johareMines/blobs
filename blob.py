@@ -35,7 +35,13 @@ class Blob(Organism):
         self.speed = speedGoal
 
     def calcHungerRate(self):
-        return float(self.size / 100)
+        return float(self.size / 1000)
+    
+    def calcBestMovementType(self):
+        if self.hunger <= self.hungerThreshold:
+            self.walkType = self.walkTypes.FORRAGE
+        else:
+            self.walkType = self.walkTypes.RANDOM
     
     def randomWalk(self):
         # Modify speed
@@ -69,4 +75,36 @@ class Blob(Organism):
 
         returnVect = (dx, dy)
         return returnVect
+    
+    
+    def move(self):
+        velVector = (0, 0)
+
+        # Update dest based on walk
+        self.calcBestMovementType()
+        if self.walkType == self.walkTypes.RANDOM:
+            velVector = self.randomWalk()
+        elif self.walkType == self.walkTypes.FORRAGE:
+            velVector = self.forageWalk()
+          
+
+        # Apply change to existing destination
+        self.destX = velVector[0]
+        self.destY = velVector[1]
+
+        self.calcBoundaries() 
+
+        dist = self.calcDistance(self.destX, self.destY)
+
+        if dist <= self.speed:
+            self.x = self.destX
+            self.y = self.destY
+        else:
+            dx = self.destX - self.x
+            dy = self.destY - self.y
+            velX = dx / dist * self.speed
+            velY = dy / dist * self.speed
+
+            self.x += velX
+            self.y += velY
     
