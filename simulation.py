@@ -57,6 +57,9 @@ class Background(Drawable):
                             [-1, -2, -2, -2, -1],
                             [0, -1, -1, -1, 0]])
         
+
+        allKernels = (kernelUp1, kernelUp2, kernelUp3, kernelUp4, kernelDown1, kernelDown2, kernelDown3)
+        
         
 
         # Perform convolution
@@ -66,25 +69,13 @@ class Background(Drawable):
             if iterations >= maxIterations:
                 break
 
-            whichKer = random.randint(0, 6)
-            if whichKer == 0:
-                kernel = kernelUp1
-            elif whichKer == 1:
-                kernel = kernelUp2
-            elif whichKer == 2:
-                kernel = kernelUp3
-            elif whichKer == 3:
-                kernel = kernelUp4
-            elif whichKer == 4:
-                kernel = kernelDown1
-            elif whichKer == 5:
-                kernel = kernelDown2
-            else:
-                kernel = kernelDown3
+            # Select random kernel
+            whichKer = random.randint(0, len(allKernels) - 1)
+            kernel = allKernels[whichKer]
 
-            # Rotate the kernel sometimes
-            rotate = random.randint(0, 1)
-            if rotate == 0:
+            # Rotate the kernel 0, 1, 2, or 3 times
+            rotate = random.randint(0, 3)
+            for i in range(0, rotate):
                 kernel = np.rot90(kernel, k=-1)
 
             kernelWidth, kernelHeight = kernel.shape

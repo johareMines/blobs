@@ -2,6 +2,7 @@ from enum import Enum
 import pygame
 import math
 from constants import Constants
+from monteCarlo import monteCarlo
  
 
 class Organism:
@@ -14,6 +15,10 @@ class Organism:
         self.color = color
         self.maxSpeed = maxSpeed
         self.speed = 0.0
+
+        # Random initial hunger, more likely to be large
+        self.hunger = abs(monteCarlo("LESS")[0] * 100)
+        self.hungerThreshold = 50
 
         self.walkType = self.walkTypes.RANDOM
 
@@ -42,6 +47,11 @@ class Organism:
             self.x += velX
             self.y += velY
 
+    def calcBestMovementType(self):
+        if self.hunger <= self.hungerThreshold:
+            self.walkType = self.walkTypes.FORRAGE
+        else:
+            self.walkType = self.walkTypes.RANDOM
 
     # Ensure organism doesn't leave map
     def calcBoundaries(self):
@@ -55,10 +65,6 @@ class Organism:
         elif self.destY > Constants.SCREEN_HEIGHT:
             self.destY = float(Constants.SCREEN_HEIGHT - 1)
 
-    # Check desired move speed
-    def calcSpeed(self):
-        raise NotImplementedError("Parent class method must be overwritten")
-    
 
     def calcDistance(self, targetX, targetY):
         x1 = math.pow(self.x - targetX, 2)
@@ -71,22 +77,48 @@ class Organism:
         RANDOM = "RANDOM"
         FORRAGE = "FORRAGE"
 
+
+    # Define methods child classes must define
     def randomWalk(self):
         raise NotImplementedError("Parent class method must be overwritten")
     
     def forageWalk(self):
         raise NotImplementedError("Parent class method must be overwritten")
 
+    def calcSpeed(self):
+        raise NotImplementedError("Parent class method must be overwritten")
+    
+    def calcHungerRate(self):
+        raise NotImplementedError("Parent class method must be overwritten")
+
+    def update(self):
+        self.hunger -= self.calcHungerRate()
+        if self.hunger < 0.0:
+            self.hunger = 0.0
+
+        # Consume self if too hungry
+        if self.hunger == 0.0:
+            self.size -= 1
+            self.hunger += 3
+
+        
+        self.calcBestMovementType()
+
     def move(self):
         velVector = (0, 0)
-        # Select Walk
+
+        self.update()
+
+        # Update dest based on walk
         if self.walkType == self.walkTypes.RANDOM:
             velVector = self.randomWalk()
+        elif self.walkType == self.walkTypes.FORRAGE:
+            velVector = self.forageWalk()
           
 
         # Apply change to existing destination
-        self.destX += velVector[0]
-        self.destY += velVector[1]
+        self.destX = velVector[0]
+        self.destY = velVector[1]
 
         self.calcBoundaries() 
 

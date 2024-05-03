@@ -1,12 +1,15 @@
 from organism import Organism
 from monteCarlo import monteCarlo
 from constants import Constants
-from food import FoodHerbivore
+
 
 
 
 class Blob(Organism):
-    
+    def __init__(self, x, y, size, color, maxSpeed=0.4):
+        super().__init__(x, y, size, color, maxSpeed)
+        self.hungerThreshold = 45
+
     def calcSpeed(self):
         speedGoal = self.speed
 
@@ -21,12 +24,18 @@ class Blob(Organism):
 
             speedGoal += (i[0] * 0.1)
         
+        elif self.walkType == self.walkTypes.FORRAGE:
+            speedGoal = self.maxSpeed / 2
+        
         if speedGoal > self.maxSpeed:
             speedGoal = self.maxSpeed
         if speedGoal < 0:
             speedGoal = 0
         
         self.speed = speedGoal
+
+    def calcHungerRate(self):
+        return float(self.size / 100)
     
     def randomWalk(self):
         # Modify speed
@@ -35,9 +44,12 @@ class Blob(Organism):
         # Return a vector that will be added to current destination
         vect = monteCarlo("GREATER")
         vect = tuple(i * 4 for i in vect)
-        return (vect)
+        first = self.destX + vect[0]
+        second = self.destY + vect[1]
+        return (first, second)
     
     def forageWalk(self):
+        
         self.calcSpeed()
 
         # Find closest food
@@ -48,3 +60,13 @@ class Blob(Organism):
 
             if dist < closestDist:
                 closestFood = food
+                closestDist = dist
+                
+        
+        # Navigate towards food
+        dx = closestFood.x
+        dy = closestFood.y
+
+        returnVect = (dx, dy)
+        return returnVect
+    
