@@ -128,9 +128,6 @@ class Background(Drawable):
 
 
 class Simulation:
-
-    ORGANISMS = []
-    FOODS = []
     
     def __init__(self, width=1920, height=1080):
         pygame.init()
@@ -140,14 +137,11 @@ class Simulation:
         
         screenInfo = pygame.display.Info()
 
-        # Simulation.SCREEN_WIDTH = screenInfo.current_w
-        # Simulation.SCREEN_HEIGHT = screenInfo.current_h
         Constants.SCREEN_WIDTH = screenInfo.current_w
         Constants.SCREEN_HEIGHT = screenInfo.current_h
 
-        # Simulation.SCREEN = pygame.display.set_mode((self.SCREEN_WIDTH, self.SCREEN_HEIGHT), pygame.FULLSCREEN, display=0)
-
         Constants.SCREEN = pygame.display.set_mode((Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), pygame.FULLSCREEN, display=0)
+        
         self.clock = pygame.time.Clock()
 
         Constants.BACKGROUND = Background(85, 50)
@@ -158,10 +152,10 @@ class Simulation:
 
         Constants.BACKGROUND.draw()
 
-        for organism in Simulation.ORGANISMS:
+        for organism in Constants.ORGANISMS:
             organism.draw(Constants.SCREEN)
         
-        for food in Simulation.FOODS:
+        for food in Constants.FOODS:
             food.draw(Constants.SCREEN)
 
         pygame.display.flip()
@@ -173,7 +167,7 @@ class Simulation:
                 if event.type == pygame.QUIT:
                     running = False
 
-            for organism in Simulation.ORGANISMS:
+            for organism in Constants.ORGANISMS:
                 organism.move()
 
             self.draw_organisms()

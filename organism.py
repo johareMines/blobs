@@ -58,14 +58,24 @@ class Organism:
     # Check desired move speed
     def calcSpeed(self):
         raise NotImplementedError("Parent class method must be overwritten")
+    
+
+    def calcDistance(self, targetX, targetY):
+        x1 = math.pow(self.x - targetX, 2)
+        y1 = math.pow(self.y - targetY, 2)
+
+        return math.sqrt(x1 + y1)
 
 
     class walkTypes(Enum):
         RANDOM = "RANDOM"
+        FORRAGE = "FORRAGE"
 
     def randomWalk(self):
         raise NotImplementedError("Parent class method must be overwritten")
-        
+    
+    def forageWalk(self):
+        raise NotImplementedError("Parent class method must be overwritten")
 
     def move(self):
         velVector = (0, 0)
@@ -95,3 +105,5 @@ class Organism:
         # spriteWidth, spriteHeight = self.scaledImage.get_rect().size
 
         # screen.blit(self.scaledImage, (self.x - spriteWidth / 2, self.y - spriteHeight / 2))
+
+

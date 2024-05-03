@@ -1,5 +1,7 @@
 from organism import Organism
 from monteCarlo import monteCarlo
+from constants import Constants
+from food import FoodHerbivore
 
 
 
@@ -34,3 +36,15 @@ class Blob(Organism):
         vect = monteCarlo("GREATER")
         vect = tuple(i * 4 for i in vect)
         return (vect)
+    
+    def forageWalk(self):
+        self.calcSpeed()
+
+        # Find closest food
+        closestFood = None
+        closestDist = 999999999
+        for food in Constants.FOODS:
+            dist = self.calcDistance(food.x, food.y)
+
+            if dist < closestDist:
+                closestFood = food

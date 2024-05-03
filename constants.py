@@ -8,3 +8,6 @@ class Constants:
 
     SCREEN = None
     BACKGROUND = None
+
+    ORGANISMS = []
+    FOODS = []
