@@ -91,9 +91,21 @@ class Background(Drawable):
 
             iterations += 1
         
-        # for i in Background.GRID: 
-        #     print(i)
+        # Add rocks
+        for i in range(5):
+            i = random.randint(1, gridWidth - 2)
+            j = random.randint(1, gridHeight - 2)
 
+            Background.GRID[i, j] = -101
+            
+            bonusRocks = random.randint(0, 3)
+            for _ in range(bonusRocks):
+                x = y = 0
+                while x == 0 and y == 0:
+                    x, y = random.randint(-1, 1), random.randint(-1, 1)
+                
+                Background.GRID[i+x, j+y] = -101
+        
     
     def draw(self):
         tileWidth = math.ceil(Constants.SCREEN_WIDTH / self.xCells)
@@ -105,7 +117,9 @@ class Background(Drawable):
                 # Calculate color
                 elevation = Background.GRID[i][j]
 
-                if elevation < -7: # Water
+                if elevation == -101: # Rock
+                    COLOR = (111, 111, 111)
+                elif elevation < -7: # Water
                     COLOR = (57, 95, 127)
                 elif elevation > 7: # Snow
                     COLOR = (235, 240, 245)

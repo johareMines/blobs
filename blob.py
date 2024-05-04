@@ -9,6 +9,8 @@ class Blob(Organism):
     def __init__(self, x, y, size, color, maxSpeed=0.4):
         super().__init__(x, y, size, color, maxSpeed)
         self.hungerThreshold = 45
+        self.forageIteration = 0
+        self.foodCollisionIteration = 0
 
     def calcSpeed(self):
         speedGoal = self.speed
@@ -53,20 +55,25 @@ class Blob(Organism):
     
     def forageWalk(self):
 
-        # Find closest food
-        closestFood = None
-        closestDist = 999999999
-        for food in Constants.FOODS:
-            dist = self.calcDistance(food.x, food.y)
+        if self.forageIteration == 0:
+            # Find closest food
+            self.closestFood = None
+            closestDist = 999999999
+            for food in Constants.FOODS:
+                dist = self.calcDistance(food.x, food.y)
 
-            if dist < closestDist:
-                closestFood = food
-                closestDist = dist
+                if dist < closestDist:
+                    self.closestFood = food
+                    closestDist = dist
                 
-        
+            self.forageIteration = 10
+        else:
+            self.forageIteration -= 1
+
+                
         # Navigate towards food
-        dx = closestFood.x
-        dy = closestFood.y
+        dx = self.closestFood.x
+        dy = self.closestFood.y
 
         returnVect = (dx, dy)
         return returnVect
@@ -80,11 +87,17 @@ class Blob(Organism):
                 i.deleteSelf()
                 self.size += int(i.size * 0.5)
                 self.hunger += i.size * 8
+                break
 
     
     def move(self):
         velVector = (0, 0)
-        self.checkFoodCollision()
+
+        if self.foodCollisionIteration == 0:
+            self.checkFoodCollision()
+            self.foodCollisionIteration = 5
+        else:
+            self.foodCollisionIteration -= 1
 
         # Update dest based on walk
         self.calcBestMovementType()

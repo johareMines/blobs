@@ -10,5 +10,4 @@ class Constants:
     BACKGROUND = None
 
     ORGANISMS = []
-    # FOODS = []
-    
+    FOODS = set({})

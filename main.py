@@ -10,12 +10,12 @@ from blob import Blob
 
 if __name__ == "__main__":
     simulation = Simulation()
-    for _ in range(10):
+    for _ in range(30):
         blob = Blob(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)), 10, (255, 0, 0))
         Constants.ORGANISMS.append(blob)
     
     for _ in range(20):
         foodHerbivore = FoodHerbivore(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)))
-        Constants.FOODS.append(foodHerbivore)
+        Constants.FOODS.add(foodHerbivore)
 
     simulation.run()
