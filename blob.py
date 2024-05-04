@@ -44,9 +44,6 @@ class Blob(Organism):
             self.walkType = self.walkTypes.RANDOM
     
     def randomWalk(self):
-        # Modify speed
-        self.calcSpeed()
-
         # Return a vector that will be added to current destination
         vect = monteCarlo("GREATER")
         vect = tuple(i * 4 for i in vect)
@@ -55,8 +52,6 @@ class Blob(Organism):
         return (first, second)
     
     def forageWalk(self):
-        
-        self.calcSpeed()
 
         # Find closest food
         closestFood = None
@@ -76,12 +71,24 @@ class Blob(Organism):
         returnVect = (dx, dy)
         return returnVect
     
+    def checkFoodCollision(self):
+        for i in Constants.FOODS:
+            dist = self.calcDistance(i.x, i.y)
+
+            # Eat food
+            if dist < self.size:
+                i.deleteSelf()
+                self.size += int(i.size * 0.5)
+                self.hunger += i.size * 8
+
     
     def move(self):
         velVector = (0, 0)
+        self.checkFoodCollision()
 
         # Update dest based on walk
         self.calcBestMovementType()
+        self.calcSpeed()
         if self.walkType == self.walkTypes.RANDOM:
             velVector = self.randomWalk()
         elif self.walkType == self.walkTypes.FORRAGE:
