@@ -10,7 +10,8 @@ class Berrylope(Organism):
         self.forageIteration = 0
         self.foodCollisionIteration = 0
 
-        
+        self.randomSelected = False
+        self.randomWaitTimer = -1
 
         # Sprite image
 
@@ -39,8 +40,24 @@ class Berrylope(Organism):
             self.walkType = self.walkTypes.RANDOM
 
     def randomWalk(self):
-        travelVect = monteCarlo("GREATER")
-        return (float(self.x + travelVect[0] * 60), float(self.y + travelVect[1] * 60))
+        if self.randomSelected == False:
+            travelVect = monteCarlo("GREATER")
+            self.randomSelected = True
+            multiplier = 80
+            return (float(self.x + travelVect[0] * multiplier), float(self.y + travelVect[1] * multiplier))
+        elif self.x == self.destX and self.y == self.destY:
+            # Start wait timer
+            if self.randomWaitTimer == -1:
+                self.randomWaitTimer = 60
+            elif self.randomWaitTimer == 0:
+                self.randomSelected = False
+                self.randomWaitTimer = -1
+            else:
+                self.randomWaitTimer -= 1
+            return(self.destX, self.destY)
+        else:
+            # Continue to selected destination
+            return(self.destX, self.destY)
 
     def checkFoodCollision(self):
         print("gonk")
@@ -58,7 +75,8 @@ class Berrylope(Organism):
         
 
         # Apply change to destination
-        self.destX, self.destY = velVector
+        self.destX = velVector[0]
+        self.destY = velVector[1]
 
         self.calcBoundaries()
 
