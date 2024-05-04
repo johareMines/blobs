@@ -22,15 +22,6 @@ class Organism:
 
         self.walkType = self.walkTypes.RANDOM
 
-        spriteImage = pygame.image.load("images/Small.png")
-        spriteImage = spriteImage.convert_alpha()
-
-        scaledWidth = 72
-        scaledHeight = 72
-
-        self.scaledImage = pygame.transform.scale(spriteImage, (scaledWidth, scaledHeight))
-        
-        
 
     # Ensure organism doesn't leave map
     def calcBoundaries(self):
@@ -76,6 +67,8 @@ class Organism:
     def move(self):
         raise NotImplementedError("Parent class method must be overwritten")
     
+    def draw(self):
+        raise NotImplementedError("Parent class method must be overwritten")
     
     def update(self):
         self.hunger -= self.calcHungerRate()
@@ -94,17 +87,6 @@ class Organism:
         self.draw()
 
 
-    def draw(self):
-        pygame.draw.circle(Constants.SCREEN, self.color, (self.x, self.y), self.size)
-        pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.x, self.y), self.size, 2)
-
-
-        if Constants.DEVELOPER:
-            pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.destX, self.destY), 2)
-
-        
-        # spriteWidth, spriteHeight = self.scaledImage.get_rect().size
-
-        # screen.blit(self.scaledImage, (self.x - spriteWidth / 2, self.y - spriteHeight / 2))
+    
 
 

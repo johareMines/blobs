@@ -1,6 +1,7 @@
 from organism import Organism
 from monteCarlo import monteCarlo
 from constants import Constants
+import pygame
 
 
 
@@ -11,6 +12,14 @@ class Blob(Organism):
         self.hungerThreshold = 45
         self.forageIteration = 0
         self.foodCollisionIteration = 0
+
+        # spriteImage = pygame.image.load("images/Small.png")
+        # spriteImage = spriteImage.convert_alpha()
+
+        # scaledWidth = size
+        # scaledHeight = size
+
+        # self.scaledImage = pygame.transform.scale(spriteImage, (scaledWidth, scaledHeight))
 
     def calcSpeed(self):
         speedGoal = self.speed
@@ -46,7 +55,6 @@ class Blob(Organism):
             self.walkType = self.walkTypes.RANDOM
     
     def randomWalk(self):
-        # Return a vector that will be added to current destination
         vect = monteCarlo("GREATER")
         vect = tuple(i * 4 for i in vect)
         first = self.destX + vect[0]
@@ -108,7 +116,7 @@ class Blob(Organism):
             velVector = self.forageWalk()
           
 
-        # Apply change to existing destination
+        # Apply change to destination
         self.destX = velVector[0]
         self.destY = velVector[1]
 
@@ -128,3 +136,15 @@ class Blob(Organism):
             self.x += velX
             self.y += velY
     
+    def draw(self):
+        pygame.draw.circle(Constants.SCREEN, self.color, (self.x, self.y), self.size)
+        pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.x, self.y), self.size, 2)
+
+
+        if Constants.DEVELOPER:
+            pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.destX, self.destY), 2)
+
+        
+        # spriteWidth, spriteHeight = self.scaledImage.get_rect().size
+
+        # screen.blit(self.scaledImage, (self.x - spriteWidth / 2, self.y - spriteHeight / 2))

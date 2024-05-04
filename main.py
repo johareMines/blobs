@@ -4,6 +4,7 @@ from constants import Constants
 from food import FoodHerbivore
 
 from blob import Blob
+from berrylope import Berrylope
 
 
 
@@ -13,6 +14,10 @@ if __name__ == "__main__":
     for _ in range(30):
         blob = Blob(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)), 10, (255, 0, 0))
         Constants.ORGANISMS.append(blob)
+    
+    for _ in range(5):
+        berrylope = Berrylope(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)), 25)
+        Constants.ORGANISMS.append(berrylope)
     
     for _ in range(20):
         foodHerbivore = FoodHerbivore(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)))
