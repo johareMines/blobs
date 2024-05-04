@@ -10,7 +10,7 @@ class Berrylope(Organism):
         self.forageIteration = 0
         self.foodCollisionIteration = 0
 
-        self.
+        
 
         # Sprite image
 
