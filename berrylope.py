@@ -60,7 +60,7 @@ class Berrylope(Organism):
             return(self.destX, self.destY)
 
     def checkFoodCollision(self):
-        print("gonk")
+        x = 0
 
     def move(self):
         velVector = (0, 0)

@@ -1,5 +1,4 @@
 from enum import Enum
-import pygame
 import math
 from constants import Constants
 from monteCarlo import monteCarlo
@@ -88,5 +87,3 @@ class Organism:
 
 
     
-
-

@@ -10,8 +10,11 @@ import math
 class Background(Drawable):
     GRID = None
     def __init__(self, xCells, yCells):
-        self.xCells = xCells
-        self.yCells = yCells
+        Constants.xCELLS = xCells
+        Constants.yCELLS = yCells
+
+        Constants.TILE_WIDTH = math.ceil(Constants.SCREEN_WIDTH / Constants.xCELLS)
+        Constants.TILE_HEIGHT = math.ceil(Constants.SCREEN_HEIGHT / Constants.yCELLS)
 
         # self.grid = [[0 for _ in range(self.xCells)] for _ in range(self.yCells)]
         self.generateMap()
@@ -19,7 +22,7 @@ class Background(Drawable):
     
 
     def generateMap(self, maxIterations=750):
-        Background.GRID = np.zeros((self.xCells, self.yCells))
+        Background.GRID = np.zeros((Constants.xCELLS, Constants.yCELLS))
 
         kernelUp1 = np.array([[1, -1, 1],
                             [1, 2, 1],
@@ -108,27 +111,24 @@ class Background(Drawable):
         
     
     def draw(self):
-        tileWidth = math.ceil(Constants.SCREEN_WIDTH / self.xCells)
-        tileHeight = math.ceil(Constants.SCREEN_HEIGHT / self.yCells)
-
         
-        for i in range(self.xCells):
-            for j in range(self.yCells):
+        for i in range(Constants.xCELLS):
+            for j in range(Constants.yCELLS):
                 # Calculate color
                 elevation = Background.GRID[i][j]
 
-                if elevation == -101: # Rock
+                if elevation == Constants.ROCK_HEIGHT: # Rock
                     COLOR = (111, 111, 111)
-                elif elevation < -7: # Water
+                elif elevation < Constants.WATER_HEIGHT: # Water
                     COLOR = (57, 95, 127)
-                elif elevation > 7: # Snow
+                elif elevation > Constants.SNOW_HEIGHT: # Snow
                     COLOR = (235, 240, 245)
                 else:
                     COLOR = (30, 110, 45)
                     COLOR = (COLOR[0] + elevation, COLOR[1] + elevation * 4, COLOR[2] + elevation * 3)
 
 
-                pygame.draw.rect(Constants.SCREEN, COLOR, (tileWidth * i, tileHeight * j, tileWidth, tileHeight))
+                pygame.draw.rect(Constants.SCREEN, COLOR, (Constants.TILE_WIDTH * i, Constants.TILE_HEIGHT * j, Constants.TILE_WIDTH, Constants.TILE_HEIGHT))
 
 
 
@@ -166,6 +166,11 @@ class Simulation:
             
             for food in Constants.FOODS:
                 food.draw()
+            
+            
+            for grapevine in Constants.GRAPEVINES:
+                grapevine.draw()
+                grapevine.grow()
 
             pygame.display.flip() # Update display
             self.clock.tick(165)  # FPS Limit

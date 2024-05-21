@@ -101,6 +101,7 @@ class Blob(Organism):
     def move(self):
         velVector = (0, 0)
 
+        # Only check sometimes to save processing power
         if self.foodCollisionIteration == 0:
             self.checkFoodCollision()
             self.foodCollisionIteration = 5
