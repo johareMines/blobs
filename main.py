@@ -34,11 +34,10 @@ if __name__ == "__main__":
             
         #     elevation = Constants.BACKGROUND.GRID[x][y]
 
-        x *= Constants.TILE_WIDTH
-        y *= Constants.TILE_HEIGHT
+        # x, y = Constants.calcCoords(x, y)
 
         # Properly align
-        y += Constants.TILE_HEIGHT / 4
+        # y += Constants.TILE_HEIGHT / 4
         
         Constants.GRAPEVINES.add(Grapevine(x,y))
 

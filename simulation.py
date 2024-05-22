@@ -4,6 +4,7 @@ import pygame
 import numpy as np
 from drawable import Drawable
 from constants import Constants
+from food import Grapevine
 import random
 import math
 
@@ -22,7 +23,8 @@ class Background(Drawable):
     
 
     def generateMap(self, maxIterations=750):
-        Background.GRID = np.zeros((Constants.xCELLS, Constants.yCELLS))
+        # Different grid than static GRID
+        GRID = np.zeros((Constants.xCELLS, Constants.yCELLS))
 
         kernelUp1 = np.array([[1, -1, 1],
                             [1, 2, 1],
@@ -66,7 +68,7 @@ class Background(Drawable):
         
 
         # Perform convolution
-        gridWidth, gridHeight = Background.GRID.shape
+        gridWidth, gridHeight = GRID.shape
         iterations = 0
         while (True):
             if iterations >= maxIterations:
@@ -90,7 +92,7 @@ class Background(Drawable):
             i = random.randint(xPadding, gridWidth - xPadding - 1)
             j = random.randint(yPadding, gridHeight - yPadding - 1)
 
-            Background.GRID[i-xPadding:i+xPadding+1, j-yPadding:j+yPadding+1] += kernel
+            GRID[i-xPadding:i+xPadding+1, j-yPadding:j+yPadding+1] += kernel
 
             iterations += 1
         
@@ -99,7 +101,7 @@ class Background(Drawable):
             i = random.randint(1, gridWidth - 2)
             j = random.randint(1, gridHeight - 2)
 
-            Background.GRID[i, j] = -101
+            GRID[i, j] = Constants.ROCK_HEIGHT
             
             bonusRocks = random.randint(0, 3)
             for _ in range(bonusRocks):
@@ -107,7 +109,22 @@ class Background(Drawable):
                 while x == 0 and y == 0:
                     x, y = random.randint(-1, 1), random.randint(-1, 1)
                 
-                Background.GRID[i+x, j+y] = -101
+                GRID[i+x, j+y] = Constants.ROCK_HEIGHT
+        
+        # Transform GRID into a tuple to store extra info about tile
+        # Save in static var
+        Background.GRID = np.empty((Constants.xCELLS, Constants.yCELLS), dtype=object)
+        for i in range(Constants.xCELLS):
+            for j in range(Constants.yCELLS):
+                if GRID[i, j] == Constants.WATER_HEIGHT:
+                    Background.GRID[i, j] = (GRID[i, j], "Water")
+                elif GRID[i, j] == Constants.ROCK_HEIGHT:
+                    Background.GRID[i, j] = (GRID[i, j], "Rock")
+                elif GRID[i, j] == Constants.SNOW_HEIGHT:
+                    Background.GRID[i, j] = (GRID[i, j], "Snow")
+                else:
+                    Background.GRID[i, j] = (GRID[i, j], "")
+        
         
     
     def draw(self):
@@ -115,7 +132,7 @@ class Background(Drawable):
         for i in range(Constants.xCELLS):
             for j in range(Constants.yCELLS):
                 # Calculate color
-                elevation = Background.GRID[i][j]
+                elevation = Background.GRID[i, j][0]
 
                 if elevation == Constants.ROCK_HEIGHT: # Rock
                     COLOR = (111, 111, 111)
@@ -171,6 +188,12 @@ class Simulation:
             for grapevine in Constants.GRAPEVINES:
                 grapevine.draw()
                 grapevine.grow()
+            
+            # Add grapevines after iteration is finished
+            if Constants.GRAPEVINE_ADDED[1]:
+                print(Constants.GRAPEVINE_ADDED[0])
+                Constants.GRAPEVINES.add(Grapevine(Constants.GRAPEVINE_ADDED[0][0], Constants.GRAPEVINE_ADDED[0][1]))
+                Constants.GRAPEVINE_ADDED = ((0, 0), False)
 
             pygame.display.flip() # Update display
             self.clock.tick(165)  # FPS Limit

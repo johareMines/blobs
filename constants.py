@@ -16,9 +16,15 @@ class Constants:
 
     ORGANISMS = []
     FOODS = set({})
+    GRAPEVINE_ADDED = ((0, 0), False)
     GRAPEVINES = set({})
 
 
     WATER_HEIGHT = -7
     ROCK_HEIGHT = -101
     SNOW_HEIGHT = 7
+
+    def calcCoords( x, y):
+        x *= Constants.TILE_WIDTH
+        y *= Constants.TILE_HEIGHT
+        return (x, y)
