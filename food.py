@@ -87,7 +87,7 @@ class Grapevine(Food, Drawable):
                 # Constants.BACKGROUND.GRID[cell.cellX, cell.cellY] = cell
 
                 if foundCell:
-                    print(cell[1])
+                    # print(cell[1])
                     Constants.GRAPEVINE_ADDED = ((x, y), True)
             
             self.growIteration = 5

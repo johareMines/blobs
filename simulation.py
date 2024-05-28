@@ -117,13 +117,17 @@ class Background(Drawable):
         for i in range(Constants.xCELLS):
             for j in range(Constants.yCELLS):
                 if GRID[i, j] == Constants.WATER_HEIGHT:
+                    # print("Before: {}".format(GRID[i,j]))
                     Background.GRID[i, j] = (GRID[i, j], "Water")
+                    # print("After: {}".format(Background.GRID[i,j]))
                 elif GRID[i, j] == Constants.ROCK_HEIGHT:
                     Background.GRID[i, j] = (GRID[i, j], "Rock")
                 elif GRID[i, j] == Constants.SNOW_HEIGHT:
                     Background.GRID[i, j] = (GRID[i, j], "Snow")
                 else:
                     Background.GRID[i, j] = (GRID[i, j], "")
+                
+                # print(Background.GRID[i,j])
         
         
     
@@ -132,7 +136,7 @@ class Background(Drawable):
         for i in range(Constants.xCELLS):
             for j in range(Constants.yCELLS):
                 # Calculate color
-                elevation = Background.GRID[i, j][0]
+                elevation = Constants.BACKGROUND.GRID[i, j][0]
 
                 if elevation == Constants.ROCK_HEIGHT: # Rock
                     COLOR = (111, 111, 111)
@@ -167,6 +171,10 @@ class Simulation:
         self.clock = pygame.time.Clock()
 
         Constants.BACKGROUND = Background(85, 50)
+        
+        for i in range(Constants.xCELLS):
+            for j in range(Constants.yCELLS):
+                print("{}, {}, {}".format(i, j, Constants.BACKGROUND.GRID[i, j]))
 
     def run(self):
         running = True
@@ -191,7 +199,11 @@ class Simulation:
             
             # Add grapevines after iteration is finished
             if Constants.GRAPEVINE_ADDED[1]:
-                print(Constants.GRAPEVINE_ADDED[0])
+                # for cellRow in Constants.BACKGROUND.GRID:
+                #     for cell in cellRow:
+                #         print(cell)
+                # print("Type: {}".format(Constants.BACKGROUND.GRID[Constants.GRAPEVINE_ADDED[0]][1]))
+                print("Added grapevine at {}".format(Constants.GRAPEVINE_ADDED[0]))
                 Constants.GRAPEVINES.add(Grapevine(Constants.GRAPEVINE_ADDED[0][0], Constants.GRAPEVINE_ADDED[0][1]))
                 Constants.GRAPEVINE_ADDED = ((0, 0), False)
 

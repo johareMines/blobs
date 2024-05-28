@@ -78,12 +78,17 @@ class Blob(Organism):
         else:
             self.forageIteration -= 1
 
-                
-        # Navigate towards food
-        dx = self.closestFood.x
-        dy = self.closestFood.y
+        # If there is no food
+        if not self.closestFood:
+            dx = self.x
+            dy = self.y
+            returnVect = (dx, dy)
+        else:
+            # Navigate towards food
+            dx = self.closestFood.x
+            dy = self.closestFood.y
 
-        returnVect = (dx, dy)
+            returnVect = (dx, dy)
         return returnVect
     
     def checkFoodCollision(self):
