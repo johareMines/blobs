@@ -61,33 +61,33 @@ class Grapevine(Food, Drawable):
                             if cell[1] == "":
                                 x -= 1
                                 foundCell = True
+                                break
                     elif i == 1:
                         if self.cellX < Constants.xCELLS - 1:
                             cell = Constants.BACKGROUND.GRID[x + 1, y]
                             if cell[1] == "":
                                 x += 1
                                 foundCell = True
+                                break
                     elif i == 2:
                         if self.cellY != 0:
                             cell = Constants.BACKGROUND.GRID[x, y - 1]
                             if cell[1] == "":
                                 y -= 1
                                 foundCell = True
+                                break
                     elif i == 3:
                         if self.cellY < Constants.yCELLS - 1:
                             cell = Constants.BACKGROUND.GRID[x, y + 1]
                             if cell[1] == "":
                                 y += 1
                                 foundCell = True
+                                break
                 
                 
-                # cell is the cell to grow to
-                # x, y = Constants.calcCoords(int(cell[0][0]), cell[0][1])
-                # cell = (cell[0], "Vine")
-                # Constants.BACKGROUND.GRID[cell.cellX, cell.cellY] = cell
 
                 if foundCell:
-                    # print(cell[1])
+                    print("Found! {}, {}, {}".format(cell[1], x, y))
                     Constants.GRAPEVINE_ADDED = ((x, y), True)
             
             self.growIteration = 5
@@ -95,4 +95,4 @@ class Grapevine(Food, Drawable):
             self.growIteration -= 1
 
     def draw(self):
-        pygame.draw.rect(Constants.SCREEN, self.color, (self.x, self.y, Constants.TILE_WIDTH, Constants.TILE_HEIGHT/2))
+        pygame.draw.rect(Constants.SCREEN, self.color, (self.x, self.y + Constants.TILE_HEIGHT/4, Constants.TILE_WIDTH, Constants.TILE_HEIGHT/2))
