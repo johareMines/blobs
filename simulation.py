@@ -154,27 +154,37 @@ class Background(Drawable):
 
 
 class Simulation:
-    
+    __instance = None
     def __init__(self, width=1920, height=1080):
-        pygame.init()
+        if Simulation.__instance is not None:
+            raise Exception("Singleton can't be instantiated multiple times.")
+        else:
+            pygame.init()
 
-        # Windowed
-        # self.screen = pygame.display.set_mode((width, height))
-        
-        screenInfo = pygame.display.Info()
+            # Windowed
+            # self.screen = pygame.display.set_mode((width, height))
+            
+            screenInfo = pygame.display.Info()
 
-        Constants.SCREEN_WIDTH = screenInfo.current_w
-        Constants.SCREEN_HEIGHT = screenInfo.current_h
+            Constants.SCREEN_WIDTH = screenInfo.current_w
+            Constants.SCREEN_HEIGHT = screenInfo.current_h
 
-        Constants.SCREEN = pygame.display.set_mode((Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), pygame.FULLSCREEN, display=0)
-        
-        self.clock = pygame.time.Clock()
+            Constants.SCREEN = pygame.display.set_mode((Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), pygame.FULLSCREEN, display=0)
+            
+            self.clock = pygame.time.Clock()
 
-        Constants.BACKGROUND = Background(85, 50)
-        
-        for i in range(Constants.xCELLS):
-            for j in range(Constants.yCELLS):
-                print("{}, {}, {}".format(i, j, Constants.BACKGROUND.GRID[i, j]))
+            Constants.BACKGROUND = Background(85, 50)
+            
+            # for i in range(Constants.xCELLS):
+            #     for j in range(Constants.yCELLS):
+            #         print("{}, {}, {}".format(i, j, Constants.BACKGROUND.GRID[i, j]))
+                
+    @staticmethod
+    def get_instance():
+        # Static method to get the singleton instance
+        if Simulation.__instance is None:
+            Simulation.__instance = Simulation()
+        return Simulation.__instance
 
     def run(self):
         running = True
@@ -199,15 +209,11 @@ class Simulation:
             
             # Add grapevines after iteration is finished
             if Constants.GRAPEVINE_ADDED[1]:
-                # for cellRow in Constants.BACKGROUND.GRID:
-                #     for cell in cellRow:
-                #         print(cell)
-                # print("Type: {}".format(Constants.BACKGROUND.GRID[Constants.GRAPEVINE_ADDED[0]][1]))
-                print("Added grapevine at {}".format(Constants.GRAPEVINE_ADDED[0]))
                 Constants.GRAPEVINES.add(Grapevine(Constants.GRAPEVINE_ADDED[0][0], Constants.GRAPEVINE_ADDED[0][1]))
                 Constants.GRAPEVINE_ADDED = ((0, 0), False)
 
             pygame.display.flip() # Update display
             self.clock.tick(165)  # FPS Limit
+            
 
         pygame.quit()

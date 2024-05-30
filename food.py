@@ -87,8 +87,8 @@ class Grapevine(Food, Drawable):
                 
 
                 if foundCell:
-                    print("Found! {}, {}, {}".format(cell[1], x, y))
-                    Constants.GRAPEVINE_ADDED = ((x, y), True)
+                    # Mark cell to add new grapevine after the grapevine update loop ends
+                    Constants.GRAPEVINE_ADDED = ((x, y), True) 
             
             self.growIteration = 5
         else:

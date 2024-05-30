@@ -2,6 +2,7 @@ from enum import Enum
 import math
 from constants import Constants
 from monteCarlo import monteCarlo
+from abc import ABC, abstractmethod
  
 
 class Organism:
@@ -48,24 +49,31 @@ class Organism:
 
 
     # Define methods child classes must define
+    @abstractmethod
     def randomWalk(self):
         raise NotImplementedError("Parent class method must be overwritten")
     
+    @abstractmethod
     def forageWalk(self):
         raise NotImplementedError("Parent class method must be overwritten")
 
+    @abstractmethod
     def calcSpeed(self):
         raise NotImplementedError("Parent class method must be overwritten")
     
+    @abstractmethod
     def calcHungerRate(self):
         raise NotImplementedError("Parent class method must be overwritten")
 
+    @abstractmethod
     def calcBestMovementType(self):
         raise NotImplementedError("Parent class method must be overwritten")
     
+    @abstractmethod
     def move(self):
         raise NotImplementedError("Parent class method must be overwritten")
     
+    @abstractmethod
     def draw(self):
         raise NotImplementedError("Parent class method must be overwritten")
     
