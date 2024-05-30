@@ -2,6 +2,7 @@ from organism import Organism
 from monteCarlo import monteCarlo
 from constants import Constants
 import pygame
+from food import FoodHerbivore
 
 class Berrylope(Organism):
     def __init__(self, x, y, size=0, maxSpeed=0.8):
@@ -12,10 +13,42 @@ class Berrylope(Organism):
 
         self.randomSelected = False
         self.randomWaitTimer = -1
+        
+        self.berries = []
+        self.growIteration = 0
 
         # Sprite image
 
-
+    def update(self):
+        super().update()
+        self.growBerry()
+        
+    
+    def growBerry(self):
+        if len(self.berries) >= 10:
+            return
+        if self.growIteration == 0:
+            if self.hunger > 65:
+                # Calculate offset
+                xOff, yOff = monteCarlo("GREATER")
+                xOff *= self.size * 0.85
+                yOff *= self.size * 0.85
+                
+                berry = FoodHerbivore(self.x + xOff, self.y + yOff)
+                Constants.FOODS.add(berry)
+                self.berries.append(berry)
+                
+                # self.hunger -= 10
+                self.growIteration = 50
+        else:
+            self.growIteration -= 1
+    
+    def moveBerries(self, xShift, yShift):
+        for i in self.berries:
+            i.x += xShift
+            i.y += yShift
+            
+        
     def calcSpeed(self):
         speedGoal = self.speed
 
@@ -83,8 +116,12 @@ class Berrylope(Organism):
         dist = self.calcDistance(self.destX, self.destY)
 
         if dist <= self.speed:
+            # Move Berries
+            self.moveBerries(self.destX - self.x, self.destY - self.y)
+            
             self.x = self.destX
             self.y = self.destY
+            
         else:
             dx = self.destX - self.x
             dy = self.destY - self.y
@@ -93,6 +130,8 @@ class Berrylope(Organism):
 
             self.x += velX
             self.y += velY
+            
+            self.moveBerries(velX, velY)
 
     
     def draw(self):
