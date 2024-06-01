@@ -38,7 +38,7 @@ class Berrylope(Organism):
                 Constants.FOODS.add(berry)
                 self.berries.append(berry)
                 
-                # self.hunger -= 10
+                self.hunger -= 5
                 self.growIteration = 50
         else:
             self.growIteration -= 1

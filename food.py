@@ -38,6 +38,7 @@ class Grapevine(Food, Drawable):
         super().__init__(coordX, coordY)
         self.color = (6, 50, 29)
         self.growIteration = 0
+        self.grapeIteration = 0
         Constants.BACKGROUND.GRID[self.cellX, self.cellY] = (Constants.BACKGROUND.GRID[self.cellX][self.cellY][0], "Vine")
 
     def grow(self):
@@ -93,6 +94,17 @@ class Grapevine(Food, Drawable):
             self.growIteration = 5
         else:
             self.growIteration -= 1
+            
+    def growGrape(self):
+        # Try to grow less frequently than every frame
+        if self.grapeIteration == 0:
+            if random.random() >= 0.95:
+                self.spawnGrape()
+        else:
+            self.grapeIteration -= 1
+            
+    def spawnGrape(self):
+        pass
 
     def draw(self):
         pygame.draw.rect(Constants.SCREEN, self.color, (self.x, self.y + Constants.TILE_HEIGHT/4, Constants.TILE_WIDTH, Constants.TILE_HEIGHT/2))

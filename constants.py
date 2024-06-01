@@ -18,6 +18,7 @@ class Constants:
     FOODS = set({})
     GRAPEVINE_ADDED = ((0, 0), False)
     GRAPEVINES = set({})
+    GRAPES = set({})
 
 
     WATER_HEIGHT = -7

@@ -92,6 +92,8 @@ class Blob(Organism):
         return returnVect
     
     def checkFoodCollision(self):
+        if self.hunger >= 95:
+            return
         for i in Constants.FOODS:
             dist = self.calcDistance(i.x, i.y)
 
