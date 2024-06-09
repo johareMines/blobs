@@ -14,7 +14,9 @@ class Constants:
     SCREEN = None
     BACKGROUND = None
 
-    ORGANISMS = []
+    # ORGANISMS = []
+    BLOBS = set({})
+    BERRYLOPES = set({})
     FOODS = set({})
     GRAPEVINE_ADDED = ((0, 0), False)
     GRAPEVINES = set({})

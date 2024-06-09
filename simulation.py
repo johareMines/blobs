@@ -221,7 +221,7 @@ class Simulation:
             Constants.SCREEN_WIDTH = screenInfo.current_w
             Constants.SCREEN_HEIGHT = screenInfo.current_h
 
-            Constants.SCREEN = pygame.display.set_mode((Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), pygame.FULLSCREEN, display=0)
+            Constants.SCREEN = pygame.display.set_mode((Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), pygame.NOFRAME | pygame.RESIZABLE, display=0)
             
             self.clock = pygame.time.Clock()
 
@@ -248,16 +248,22 @@ class Simulation:
             Constants.SCREEN.fill((255, 255, 255))  # Clear the screen
             Constants.BACKGROUND.draw()
 
-            for organism in Constants.ORGANISMS:
-                organism.update()
-            
-            for food in Constants.FOODS:
-                food.draw()
-            
+            for berrylope in Constants.BERRYLOPES:
+                berrylope.update()
+                
+            for blob in Constants.BLOBS:
+                blob.update()
             
             for grapevine in Constants.GRAPEVINES:
                 grapevine.draw()
                 grapevine.grow()
+                grapevine.growGrape()
+                
+            for food in Constants.FOODS:
+                food.draw()
+            
+            for grape in Constants.GRAPES:
+                grape.draw()
             
             # Add grapevines after iteration is finished
             if Constants.GRAPEVINE_ADDED[1]:

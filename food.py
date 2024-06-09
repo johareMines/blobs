@@ -12,7 +12,16 @@ class Food:
         self.y = y
     
     def deleteSelf(self):
-        Constants.FOODS.remove(self)
+        if self.__class__.__name__ == "FoodHerbivore":
+            Constants.FOODS.remove(self)
+            for berrylope in Constants.BERRYLOPES:
+                try:
+                    berrylope.berries.remove(self)
+                except ValueError:
+                    pass
+                    
+        elif self.__class__.__name__ == "Grape":
+            Constants.GRAPES.remove(self)
 
         
 
@@ -99,12 +108,29 @@ class Grapevine(Food, Drawable):
         # Try to grow less frequently than every frame
         if self.grapeIteration == 0:
             if random.random() >= 0.95:
-                self.spawnGrape()
+                # Calculate offset
+                xOff, yOff = monteCarlo("GREATER")
+                xOff *= Constants.TILE_WIDTH * 0.45
+                yOff *= Constants.TILE_HEIGHT * 0.45
+                Constants.GRAPES.add(Grape((self.x + Constants.TILE_WIDTH/2) + xOff, (self.y + Constants.TILE_HEIGHT/2) + yOff))
+            
+            self.grapeIteration = 10
+            
         else:
             self.grapeIteration -= 1
             
-    def spawnGrape(self):
-        pass
 
     def draw(self):
         pygame.draw.rect(Constants.SCREEN, self.color, (self.x, self.y + Constants.TILE_HEIGHT/4, Constants.TILE_WIDTH, Constants.TILE_HEIGHT/2))
+        
+        
+class Grape(Food, Drawable):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.color = (136, 6, 89)
+        self.size = 2
+    
+    
+    def draw(self):
+        pygame.draw.circle(Constants.SCREEN, self.color, (self.x, self.y), self.size)
+        pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.x, self.y), self.size, 1)

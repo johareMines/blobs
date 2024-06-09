@@ -6,12 +6,13 @@ from abc import ABC, abstractmethod
  
 
 class Organism:
-    def __init__(self, x, y, size, color, maxSpeed=0.4):
+    def __init__(self, x, y, size, color, maxSpeed=0.4, maxSize=40):
         self.x = x
         self.y = y
         self.destX = x
         self.destY = y
         self.size = size
+        self.maxSize = maxSize
         self.color = color
         self.maxSpeed = maxSpeed
         self.speed = 0.0
@@ -89,8 +90,12 @@ class Organism:
         if self.hunger == 0.0:
             self.size -= 1
             self.hunger += 5
-
+        
         self.move()
+        
+        # Check size bounds
+        if self.size > self.maxSize:
+            self.size = self.maxSize
         self.draw()
 
 

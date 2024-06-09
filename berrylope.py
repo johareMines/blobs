@@ -5,7 +5,7 @@ import pygame
 from food import FoodHerbivore
 
 class Berrylope(Organism):
-    def __init__(self, x, y, size=0, maxSpeed=0.8):
+    def __init__(self, x, y, size=0, maxSpeed=0.8, maxSize=65):
         super().__init__(x, y, size, maxSpeed)
         self.hungerThreshold = 70
         self.forageIteration = 0
@@ -67,9 +67,9 @@ class Berrylope(Organism):
         return float((self.size / 1000) + (self.speed / 500))
     
     def calcBestMovementType(self):
-        # if self.hunger <= self.hungerThreshold:
-        #     self.walkType = self.walkTypes.FORRAGE
-        # else:
+        if self.hunger <= self.hungerThreshold:
+            self.walkType = self.walkTypes.FORRAGE
+        else:
             self.walkType = self.walkTypes.RANDOM
 
     def randomWalk(self):
@@ -91,9 +91,53 @@ class Berrylope(Organism):
         else:
             # Continue to selected destination
             return(self.destX, self.destY)
+        
+    def forageWalk(self):
+        # Finish chosen navigation
+        if self.randomSelected == True:
+            return self.randomWalk()
+        
+        if self.forageIteration == 0:
+            # Find closest food
+            self.closestFood = None
+            closestDist = 999999999
+            for grape in Constants.GRAPES:
+                dist = self.calcDistance(grape.x, grape.y)
+
+                if dist < closestDist:
+                    self.closestFood = grape
+                    closestDist = dist
+                
+            self.forageIteration = 10
+        else:
+            self.forageIteration -= 1
+
+        # If there is no food
+        if not self.closestFood:
+            dx = self.x
+            dy = self.y
+            returnVect = (dx, dy)
+        else:
+            # Navigate towards food
+            dx = self.closestFood.x
+            dy = self.closestFood.y
+
+            returnVect = (dx, dy)
+        return returnVect
 
     def checkFoodCollision(self):
-        x = 0
+        if self.hunger >= 95:
+            return
+        for i in Constants.GRAPES:
+            dist = self.calcDistance(i.x, i.y)
+
+            # Eat food
+            if dist < self.size:
+                i.deleteSelf()
+                
+                self.size += int(i.size)
+                self.hunger += i.size * 5
+                break
 
     def move(self):
         velVector = (0, 0)
@@ -105,6 +149,8 @@ class Berrylope(Organism):
         self.calcSpeed()
         if self.walkType == self.walkTypes.RANDOM:
             velVector = self.randomWalk()
+        elif self.walkType == self.walkTypes.FORRAGE:
+            velVector = self.forageWalk()
         
 
         # Apply change to destination
