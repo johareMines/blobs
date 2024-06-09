@@ -7,11 +7,13 @@ import pygame
 
 
 class Blob(Organism):
-    def __init__(self, x, y, size, color, maxSpeed=0.4):
-        super().__init__(x, y, size, color, maxSpeed)
+    def __init__(self, x, y, size, maxSpeed=0.4, maxSize=25.0, deathSize=8.0):
+        super().__init__(x, y, size, maxSpeed, maxSize, deathSize)
         self.hungerThreshold = 45
         self.forageIteration = 0
         self.foodCollisionIteration = 0
+        
+        self.color = (255, 0, 0)
 
         # spriteImage = pygame.image.load("images/Small.png")
         # spriteImage = spriteImage.convert_alpha()
@@ -101,7 +103,7 @@ class Blob(Organism):
             if dist < self.size:
                 i.deleteSelf()
                 self.size += int(i.size * 0.5)
-                self.hunger += i.size * 8
+                self.hunger += i.size * 6
                 break
 
     
@@ -156,3 +158,8 @@ class Blob(Organism):
         # spriteWidth, spriteHeight = self.scaledImage.get_rect().size
 
         # screen.blit(self.scaledImage, (self.x - spriteWidth / 2, self.y - spriteHeight / 2))
+
+    
+    def die(self):
+        # Constants.BLOBS.remove(self) # Can't remove while iterating through blob set
+        Constants.DYING_BLOBS.append(self)

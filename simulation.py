@@ -270,6 +270,16 @@ class Simulation:
                 Constants.GRAPEVINES.add(Grapevine(Constants.GRAPEVINE_ADDED[0][0], Constants.GRAPEVINE_ADDED[0][1]))
                 Constants.GRAPEVINE_ADDED = ((0, 0), False)
 
+            # Kill required objects
+            if Constants.DYING_BLOBS is not None:
+                for i in Constants.DYING_BLOBS:
+                    Constants.BLOBS.remove(i)
+                Constants.DYING_BLOBS = []
+            if Constants.DYING_BERRYLOPES is not None:
+                for i in Constants.DYING_BERRYLOPES:
+                    Constants.BERRYLOPES.remove(i)
+                Constants.DYING_BERRYLOPES = []
+            
             pygame.display.flip() # Update display
             self.clock.tick(165)  # FPS Limit
             

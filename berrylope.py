@@ -5,9 +5,9 @@ import pygame
 from food import FoodHerbivore
 
 class Berrylope(Organism):
-    def __init__(self, x, y, size=0, maxSpeed=0.8, maxSize=65):
-        super().__init__(x, y, size, maxSpeed)
-        self.hungerThreshold = 70
+    def __init__(self, x, y, size=0, maxSpeed=0.6, maxSize=45.0, deathSize=20.0):
+        super().__init__(x, y, size, maxSpeed, maxSize, deathSize)
+        self.hungerThreshold = 75
         self.forageIteration = 0
         self.foodCollisionIteration = 0
 
@@ -28,7 +28,7 @@ class Berrylope(Organism):
         if len(self.berries) >= 10:
             return
         if self.growIteration == 0:
-            if self.hunger > 65:
+            if self.hunger > 75:
                 # Calculate offset
                 xOff, yOff = monteCarlo("GREATER")
                 xOff *= self.size * 0.85
@@ -38,7 +38,7 @@ class Berrylope(Organism):
                 Constants.FOODS.add(berry)
                 self.berries.append(berry)
                 
-                self.hunger -= 5
+                self.hunger -= 15
                 self.growIteration = 50
         else:
             self.growIteration -= 1
@@ -53,8 +53,9 @@ class Berrylope(Organism):
         speedGoal = self.speed
 
         if self.walkType == self.walkTypes.RANDOM:
-            speedGoal = self.maxSpeed 
-
+            speedGoal = self.maxSpeed * 0.6
+        elif self.walkType == self.walkTypes.FORRAGE:
+            speedGoal = self.maxSpeed * 0.75
         
         if speedGoal > self.maxSpeed:
             speedGoal = self.maxSpeed
@@ -64,7 +65,7 @@ class Berrylope(Organism):
         self.speed = speedGoal
     
     def calcHungerRate(self):
-        return float((self.size / 1000) + (self.speed / 500))
+        return float((self.size / 1300) + (self.speed / 500))
     
     def calcBestMovementType(self):
         if self.hunger <= self.hungerThreshold:
@@ -135,7 +136,7 @@ class Berrylope(Organism):
             if dist < self.size:
                 i.deleteSelf()
                 
-                self.size += int(i.size)
+                self.size += 1
                 self.hunger += i.size * 5
                 break
 
@@ -186,3 +187,9 @@ class Berrylope(Organism):
 
         if Constants.DEVELOPER:
             pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.destX, self.destY), 2)
+            
+    def die(self):
+        for berry in self.berries:
+            berry.deleteSelf()
+        
+        Constants.DYING_BERRYLOPES.append(self)

@@ -6,15 +6,15 @@ from abc import ABC, abstractmethod
  
 
 class Organism:
-    def __init__(self, x, y, size, color, maxSpeed=0.4, maxSize=40):
+    def __init__(self, x, y, size, maxSpeed=0.4, maxSize=40.0, deathSize=5.0):
         self.x = x
         self.y = y
         self.destX = x
         self.destY = y
         self.size = size
         self.maxSize = maxSize
-        self.color = color
         self.maxSpeed = maxSpeed
+        self.deathSize = deathSize
         self.speed = 0.0
 
         # Random initial hunger, more likely to be large
@@ -75,6 +75,10 @@ class Organism:
         raise NotImplementedError("Parent class method must be overwritten")
     
     @abstractmethod
+    def die(self):
+        raise NotImplementedError("Parent class method must be overwritten")
+    
+    @abstractmethod
     def draw(self):
         raise NotImplementedError("Parent class method must be overwritten")
     
@@ -90,6 +94,10 @@ class Organism:
         if self.hunger == 0.0:
             self.size -= 1
             self.hunger += 5
+        
+        # Check for starvation
+        if self.size < self.deathSize:
+            self.die()
         
         self.move()
         
