@@ -12,6 +12,7 @@ class Blob(Organism):
         self.hungerThreshold = 45
         self.forageIteration = 0
         self.foodCollisionIteration = 0
+        # self.
         
         self.color = (255, 0, 0)
 

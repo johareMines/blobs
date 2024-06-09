@@ -29,7 +29,7 @@ class Constants:
     ROCK_HEIGHT = -101
     SNOW_HEIGHT = 7
 
-    def calcCoords( x, y):
+    def calcCoords(x, y):
         x *= Constants.TILE_WIDTH
         y *= Constants.TILE_HEIGHT
         return (x, y)

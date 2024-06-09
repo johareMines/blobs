@@ -1,6 +1,8 @@
 import pygame
-
-
+import time
+import sys
+import psutil
+import threading
 import numpy as np
 from drawable import Drawable
 from constants import Constants
@@ -19,6 +21,7 @@ class Background(Drawable):
 
         # self.grid = [[0 for _ in range(self.xCells)] for _ in range(self.yCells)]
         self.generateMap()
+        self.createBackgroundSurface()
 
     
 
@@ -181,28 +184,32 @@ class Background(Drawable):
                 
                 # print(Background.GRID[i,j])
         
-        
-    
-    def draw(self):
-        
+    def createBackgroundSurface(self):
+        # Create a surface to draw the background once
+        self.background_surface = pygame.Surface((Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT))
         for i in range(Constants.xCELLS):
             for j in range(Constants.yCELLS):
                 # Calculate color
-                elevation = Constants.BACKGROUND.GRID[i, j][0]
+                elevation = Background.GRID[i, j][0]
 
-                if elevation == Constants.ROCK_HEIGHT: # Rock
+                if elevation == Constants.ROCK_HEIGHT:  # Rock
                     COLOR = (111, 111, 111)
-                elif elevation < Constants.WATER_HEIGHT: # Water
+                elif elevation < Constants.WATER_HEIGHT:  # Water
                     COLOR = (57, 95, 127)
-                elif elevation > Constants.SNOW_HEIGHT: # Snow
+                elif elevation > Constants.SNOW_HEIGHT:  # Snow
                     COLOR = (235, 240, 245)
                 else:
                     COLOR = (30, 110, 45)
                     COLOR = (COLOR[0] + elevation, COLOR[1] + elevation * 4, COLOR[2] + elevation * 3)
 
+                pygame.draw.rect(self.background_surface, COLOR,
+                                 (Constants.TILE_WIDTH * i, Constants.TILE_HEIGHT * j, Constants.TILE_WIDTH,
+                                  Constants.TILE_HEIGHT))
 
-                pygame.draw.rect(Constants.SCREEN, COLOR, (Constants.TILE_WIDTH * i, Constants.TILE_HEIGHT * j, Constants.TILE_WIDTH, Constants.TILE_HEIGHT))
-
+    
+    def draw(self):
+        Constants.SCREEN.blit(self.background_surface, (0,0))
+        
 
 
 class Simulation:
@@ -224,12 +231,13 @@ class Simulation:
             Constants.SCREEN = pygame.display.set_mode((Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), pygame.NOFRAME | pygame.RESIZABLE, display=0)
             
             self.clock = pygame.time.Clock()
+            self.frame_times = []
 
             Constants.BACKGROUND = Background(85, 50)
             
-            # for i in range(Constants.xCELLS):
-            #     for j in range(Constants.yCELLS):
-            #         print("{}, {}, {}".format(i, j, Constants.BACKGROUND.GRID[i, j]))
+            
+            self.cpuMonitor = CPUMonitor(1) # one second interval
+            self.cpuMonitor.start()
                 
     @staticmethod
     def get_instance():
@@ -241,9 +249,13 @@ class Simulation:
     def run(self):
         running = True
         while running:
+            start_time = time.time() # For framerate calculation
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
             
             Constants.SCREEN.fill((255, 255, 255))  # Clear the screen
             Constants.BACKGROUND.draw()
@@ -281,7 +293,50 @@ class Simulation:
                 Constants.DYING_BERRYLOPES = []
             
             pygame.display.flip() # Update display
-            self.clock.tick(165)  # FPS Limit
             
-
+            # Calc framerate
+            self.clock.tick(60)  # FPS Limit
+            end_time = time.time() 
+            frame_time = end_time - start_time
+            self.frame_times.append(frame_time)
+            if len(self.frame_times) > 100:
+                self.frame_times.pop(0)
+            # self.calculateFramerate()
+            
+            # self.calculateCpuUsage()
+            
+            
+            
+        self.cpuMonitor.stop()
+        self.cpuMonitor.join()
         pygame.quit()
+        sys.exit()
+        
+        
+    def calculateFramerate(self):
+            if len(self.frame_times) < 100:
+                return
+            
+            avg_frame_time = sum(self.frame_times) / len(self.frame_times)
+            fps = 1.0 / avg_frame_time
+            print(f"FPS: {fps}")
+            
+    def calculateCpuUsage(self):
+        usage = psutil.cpu_percent(interval=None)
+        print(f"CPU Usage: {usage}%")
+    
+    
+class CPUMonitor(threading.Thread):
+    def __init__(self, interval):
+        super().__init__()
+        self.interval = interval
+        self.stopped = threading.Event()
+        self.process = psutil.Process()
+
+    def run(self):
+        while not self.stopped.wait(self.interval):
+            cpu_percent = self.process.cpu_percent()
+            print(f"Current CPU usage: {cpu_percent}%")
+
+    def stop(self):
+        self.stopped.set()
