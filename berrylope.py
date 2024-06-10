@@ -140,6 +140,9 @@ class Berrylope(Organism):
                 self.hunger += i.size * 5
                 break
 
+    def checkBirth(self):
+        pass
+    
     def move(self):
         velVector = (0, 0)
 

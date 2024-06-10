@@ -12,7 +12,7 @@ from berrylope import Berrylope
 
 if __name__ == "__main__":
     simulation = Simulation.get_instance()
-    for _ in range(2000):
+    for _ in range(20):
         blob = Blob(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)), 10)
         Constants.BLOBS.add(blob)
     

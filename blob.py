@@ -12,7 +12,7 @@ class Blob(Organism):
         self.hungerThreshold = 45
         self.forageIteration = 0
         self.foodCollisionIteration = 0
-        # self.
+        self.birthIteration = 0
         
         self.color = (255, 0, 0)
 
@@ -107,7 +107,21 @@ class Blob(Organism):
                 self.hunger += i.size * 6
                 break
 
-    
+    def checkBirth(self):
+        if self.birthIteration <= 0:
+            if (self.size >= self.maxSize * 0.8) and self.hunger >= 70:
+                # Reproduce
+                self.size = self.size / 2
+                self.hunger -= 30
+                newMaxSpeed = self.maxSpeed + (monteCarlo("GREATER")[0] * 0.1)
+                newMaxSize = self.maxSize + (monteCarlo("GREATER")[0] * 1.5)
+                newBlob = Blob(self.x, self.y, self.size, maxSpeed=newMaxSpeed, maxSize=newMaxSize)
+                Constants.BORN_BLOBS.append(newBlob)
+                print("birthed {}, {}".format(newMaxSpeed, newMaxSize))
+                self.birthIteration = 200
+        else:
+            self.birthIteration -= 1
+
     def move(self):
         velVector = (0, 0)
 

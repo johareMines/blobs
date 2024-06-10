@@ -79,6 +79,10 @@ class Organism:
         raise NotImplementedError("Parent class method must be overwritten")
     
     @abstractmethod
+    def checkBirth(self):
+        raise NotImplementedError("Parent class method must be overwritten")
+
+    @abstractmethod
     def draw(self):
         raise NotImplementedError("Parent class method must be overwritten")
     
@@ -100,6 +104,8 @@ class Organism:
             self.die()
         
         self.move()
+
+        self.checkBirth()
         
         # Check size bounds
         if self.size > self.maxSize:

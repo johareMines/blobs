@@ -232,6 +232,7 @@ class Simulation:
             
             self.clock = pygame.time.Clock()
             self.frame_times = []
+            self.frame_print_time = time.time()
 
             Constants.BACKGROUND = Background(85, 50)
             
@@ -283,14 +284,24 @@ class Simulation:
                 Constants.GRAPEVINE_ADDED = ((0, 0), False)
 
             # Kill required objects
-            if Constants.DYING_BLOBS is not None:
+            if len(Constants.DYING_BLOBS) > 0:
                 for i in Constants.DYING_BLOBS:
                     Constants.BLOBS.remove(i)
                 Constants.DYING_BLOBS = []
-            if Constants.DYING_BERRYLOPES is not None:
+            if len(Constants.DYING_BERRYLOPES) > 0:
                 for i in Constants.DYING_BERRYLOPES:
                     Constants.BERRYLOPES.remove(i)
                 Constants.DYING_BERRYLOPES = []
+            
+            # Spawn new organisms
+            if len(Constants.BORN_BLOBS) > 0:
+                for i in Constants.BORN_BLOBS:
+                    Constants.BLOBS.add(i)
+                Constants.BORN_BLOBS = []
+            if len(Constants.BORN_BERRYLOPES) > 0:
+                for i in Constants.BORN_BERRYLOPES:
+                    Constants.BERRYLOPES.add(i)
+                Constants.BORN_BERRYLOPES = []
             
             pygame.display.flip() # Update display
             
@@ -301,9 +312,7 @@ class Simulation:
             self.frame_times.append(frame_time)
             if len(self.frame_times) > 100:
                 self.frame_times.pop(0)
-            # self.calculateFramerate()
-            
-            # self.calculateCpuUsage()
+            self.calculateFramerate()
             
             
             
@@ -314,16 +323,18 @@ class Simulation:
         
         
     def calculateFramerate(self):
-            if len(self.frame_times) < 100:
-                return
+        if time.time() - self.frame_print_time < 1:
+            return
+        
+        if len(self.frame_times) < 100:
+            return
             
-            avg_frame_time = sum(self.frame_times) / len(self.frame_times)
-            fps = 1.0 / avg_frame_time
-            print(f"FPS: {fps}")
+        avg_frame_time = sum(self.frame_times) / len(self.frame_times)
+        fps = 1.0 / avg_frame_time
+        print(f"FPS: {round(fps, 1)}")
+
+        self.frame_print_time = time.time()
             
-    def calculateCpuUsage(self):
-        usage = psutil.cpu_percent(interval=None)
-        print(f"CPU Usage: {usage}%")
     
     
 class CPUMonitor(threading.Thread):
@@ -336,7 +347,7 @@ class CPUMonitor(threading.Thread):
     def run(self):
         while not self.stopped.wait(self.interval):
             cpu_percent = self.process.cpu_percent()
-            print(f"Current CPU usage: {cpu_percent}%")
+            print(f"CPU usage: {cpu_percent}%")
 
     def stop(self):
         self.stopped.set()

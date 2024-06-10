@@ -100,7 +100,7 @@ class Grapevine(Food, Drawable):
                     # Mark cell to add new grapevine after the grapevine update loop ends
                     Constants.GRAPEVINE_ADDED = ((x, y), True) 
             
-            self.growIteration = 5
+            self.growIteration = 15
         else:
             self.growIteration -= 1
             
@@ -118,7 +118,8 @@ class Grapevine(Food, Drawable):
             
         else:
             self.grapeIteration -= 1
-            
+    
+    
 
     def draw(self):
         pygame.draw.rect(Constants.SCREEN, self.color, (self.x, self.y + Constants.TILE_HEIGHT/4, Constants.TILE_WIDTH, Constants.TILE_HEIGHT/2))
