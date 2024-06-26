@@ -18,10 +18,14 @@ class Constants:
     BORN_BLOBS = []
     DYING_BLOBS = []
     BLOBS = set({})
+    
     BORN_BERRYLOPES = []
     DYING_BERRYLOPES = []
     MATING_BERRYLOPES = []
     BERRYLOPES = set({})
+    
+    PARTICLES = set({})
+    
     FOODS = set({})
     GRAPEVINE_ADDED = ((0, 0), False)
     GRAPEVINES = set({})

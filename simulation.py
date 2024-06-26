@@ -287,11 +287,16 @@ class Simulation:
                 
             for blob in Constants.BLOBS:
                 blob.update()
+                
+            for particle in Constants.PARTICLES:
+                particle.update()
             
             for grapevine in Constants.GRAPEVINES:
                 grapevine.draw()
                 grapevine.grow()
                 grapevine.growGrape()
+                
+            
                 
             for food in Constants.FOODS:
                 food.draw()
@@ -323,6 +328,9 @@ class Simulation:
                 for i in Constants.BORN_BERRYLOPES:
                     Constants.BERRYLOPES.add(i)
                 Constants.BORN_BERRYLOPES = []
+                
+            # Draw circle at mouse position
+            # self.drawMouseCircle()
             
             pygame.display.flip() # Update display
             
@@ -342,7 +350,12 @@ class Simulation:
         pygame.quit()
         sys.exit()
         
-        
+    def drawMouseCircle(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        if 0 <= mouse_x <= Constants.SCREEN_WIDTH and 0 <= mouse_y <= Constants.SCREEN_HEIGHT:
+            pygame.draw.circle(Constants.SCREEN, (0, 255, 0), (mouse_x, mouse_y), 10)
+            print("Mouse x: {} | Mouse y: {}".format(mouse_x, mouse_y))
+    
     def calculateFramerate(self):
         if time.time() - self.frame_print_time < 20:
             return

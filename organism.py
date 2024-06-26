@@ -43,6 +43,31 @@ class Organism:
 
         return math.sqrt(x1 + y1)
 
+    def update(self):
+        self.hunger -= self.calcHungerRate()
+        if self.hunger < 0.0:
+            self.hunger = 0.0
+
+        if self.hunger > 100.0:
+            self.hunger = 100.0
+
+        # Consume self if too hungry
+        if self.hunger == 0.0:
+            self.size -= 1
+            self.hunger += 5
+        
+        # Check for starvation
+        if self.size < self.deathSize:
+            self.die()
+        
+        self.move()
+
+        self.checkBirth()
+        
+        # Check size bounds
+        if self.size > self.maxSize:
+            self.size = self.maxSize
+        self.draw()
 
     class walkTypes(Enum):
         RANDOM = "RANDOM"
@@ -87,31 +112,7 @@ class Organism:
     def draw(self):
         raise NotImplementedError("Parent class method must be overwritten")
     
-    def update(self):
-        self.hunger -= self.calcHungerRate()
-        if self.hunger < 0.0:
-            self.hunger = 0.0
-
-        if self.hunger > 100.0:
-            self.hunger = 100.0
-
-        # Consume self if too hungry
-        if self.hunger == 0.0:
-            self.size -= 1
-            self.hunger += 5
-        
-        # Check for starvation
-        if self.size < self.deathSize:
-            self.die()
-        
-        self.move()
-
-        self.checkBirth()
-        
-        # Check size bounds
-        if self.size > self.maxSize:
-            self.size = self.maxSize
-        self.draw()
+    
 
 
     

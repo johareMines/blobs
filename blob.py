@@ -1,7 +1,9 @@
 from organism import Organism
+from particle import Particle
 from monteCarlo import monteCarlo
 from constants import Constants
 import pygame
+import random
 
 
 
@@ -12,9 +14,11 @@ class Blob(Organism):
         self.hungerThreshold = 45
         self.forageIteration = 0
         self.foodCollisionIteration = 0
-        self.birthIteration, self.BIRTH_ITERATION =  2000, 2000
+        self.birthIteration, self.BIRTH_ITERATION = 2000, 2000
         
         self.color = (255, 0, 0)
+        
+        self.poopIteration, self.POOP_ITERATION = random.randint(0, 800), 800
 
         # spriteImage = pygame.image.load("images/Small.png")
         # spriteImage = spriteImage.convert_alpha()
@@ -23,6 +27,10 @@ class Blob(Organism):
         # scaledHeight = size
 
         # self.scaledImage = pygame.transform.scale(spriteImage, (scaledWidth, scaledHeight))
+
+    def update(self):
+        super().update()
+        self.checkRandomPoop()
 
     # Calc how fast to move to destination
     def calcSpeed(self):
@@ -126,6 +134,16 @@ class Blob(Organism):
                 self.birthIteration = self.BIRTH_ITERATION
         else:
             self.birthIteration -= 1
+    
+    # Poop a particle sometimes
+    def checkRandomPoop(self):
+        if self.poopIteration <= 0:
+            # Chance to poo
+            if random.random() > 0.65:
+                Constants.PARTICLES.add(Particle(self.x, self.y))
+            self.poopIteration = self.POOP_ITERATION
+        else:
+            self.poopIteration -= 1
 
     # Figure out where to move to and how to do it, then do it
     def move(self):
