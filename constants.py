@@ -28,9 +28,9 @@ class Constants:
     GRAPES = set({})
 
 
-    WATER_HEIGHT = -7
+    WATER_HEIGHT = -12
     ROCK_HEIGHT = -101
-    SNOW_HEIGHT = 7
+    SNOW_HEIGHT = 12
 
     def calcCoords(x, y):
         x *= Constants.TILE_WIDTH

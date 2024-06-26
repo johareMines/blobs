@@ -29,7 +29,7 @@ class Berrylope(Organism):
         self.noAvailableMates = False
         self.isMating = False
         self.pregnantIteration, self.PREGNANT_ITERATION = pregnantIncubateTime, pregnantIncubateTime
-        self.birthIteration = random.randint(0, 30)
+        self.birthIteration, self.BIRTH_ITERATION = random.randint(0, 30), 600
 
         # Sprite image
 
@@ -40,6 +40,7 @@ class Berrylope(Organism):
         self.checkBirth()
         
     
+    # Grow berry only if appropriate
     def growBerry(self):
         if len(self.berries) >= 10:
             return
@@ -59,6 +60,7 @@ class Berrylope(Organism):
         else:
             self.growIteration -= 1
     
+    # Shift berries with animal as it moves
     def moveBerries(self, xShift, yShift):
         for i in self.berries:
             i.x += xShift
@@ -85,6 +87,7 @@ class Berrylope(Organism):
     def calcHungerRate(self):
         return float((self.size / 1300) + (self.speed / 500))
     
+    # Check stats and determine next move
     def calcBestMovementType(self):
         if self.inHeat and self.noAvailableMates == False:
             self.walkType = self.walkTypes.MATE
@@ -95,6 +98,7 @@ class Berrylope(Organism):
         
         self.noAvailableMates = False
 
+    #### Walk definitions ####
     def randomWalk(self):
         if self.randomSelected == False:
             travelVect = monteCarlo("GREATER")
@@ -211,6 +215,7 @@ class Berrylope(Organism):
         self.chosenPartner = None
         self.isMating = False
 
+    # Eat food if close and in the mood
     def checkFoodCollision(self):
         if self.hunger >= 95:
             return
@@ -233,11 +238,12 @@ class Berrylope(Organism):
             # Check for health
             if self.hunger > 60:
                 self.inHeat = True # Will attempt to look for a partner
-                self.birthIteration = 350
+                self.birthIteration = self.BIRTH_ITERATION
             
         else:
             self.birthIteration -= 1
             
+    # Progress pregnancy
     def checkBirth(self):
         if not self.pregnant:
             return
@@ -268,9 +274,8 @@ class Berrylope(Organism):
         
         return destVector
     
+    # Figure out where to move to and how to do it, then do it
     def move(self):
-        velVector = (0, 0)
-
         self.checkFoodCollision()
 
         

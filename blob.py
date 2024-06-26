@@ -12,7 +12,7 @@ class Blob(Organism):
         self.hungerThreshold = 45
         self.forageIteration = 0
         self.foodCollisionIteration = 0
-        self.birthIteration = 0
+        self.birthIteration, self.BIRTH_ITERATION =  2000, 2000
         
         self.color = (255, 0, 0)
 
@@ -24,6 +24,7 @@ class Blob(Organism):
 
         # self.scaledImage = pygame.transform.scale(spriteImage, (scaledWidth, scaledHeight))
 
+    # Calc how fast to move to destination
     def calcSpeed(self):
         speedGoal = self.speed
 
@@ -51,12 +52,15 @@ class Blob(Organism):
     def calcHungerRate(self):
         return float(self.size / 1000)
     
+    # Check stats and determine next move
     def calcBestMovementType(self):
         if self.hunger <= self.hungerThreshold:
             self.walkType = self.walkTypes.FORRAGE
         else:
             self.walkType = self.walkTypes.RANDOM
     
+    
+    #### Walk definitions ####
     def randomWalk(self):
         vect = monteCarlo("GREATER")
         vect = tuple(i * 4 for i in vect)
@@ -94,6 +98,7 @@ class Blob(Organism):
             returnVect = (dx, dy)
         return returnVect
     
+    # Eat food if close and in the mood
     def checkFoodCollision(self):
         if self.hunger >= 95:
             return
@@ -107,6 +112,7 @@ class Blob(Organism):
                 self.hunger += i.size * 6
                 break
 
+    # Reproduce if successful
     def checkBirth(self):
         if self.birthIteration <= 0:
             if (self.size >= self.maxSize * 0.8) and self.hunger >= 70:
@@ -117,10 +123,11 @@ class Blob(Organism):
                 newMaxSize = self.maxSize + (monteCarlo("GREATER")[0] * 1.5)
                 newBlob = Blob(self.x, self.y, self.size, maxSpeed=newMaxSpeed, maxSize=newMaxSize)
                 Constants.BORN_BLOBS.append(newBlob)
-                self.birthIteration = 200
+                self.birthIteration = self.BIRTH_ITERATION
         else:
             self.birthIteration -= 1
 
+    # Figure out where to move to and how to do it, then do it
     def move(self):
         velVector = (0, 0)
 
