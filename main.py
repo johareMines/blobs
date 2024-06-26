@@ -12,11 +12,11 @@ from berrylope import Berrylope
 
 if __name__ == "__main__":
     simulation = Simulation.get_instance()
-    for _ in range(20):
+    for _ in range(100):
         blob = Blob(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)), 10)
         Constants.BLOBS.add(blob)
     
-    for _ in range(3):
+    for _ in range(5):
         berrylope = Berrylope(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)), 25)
         Constants.BERRYLOPES.add(berrylope)
     
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     #     Constants.FOODS.add(foodHerbivore)
 
 
-    for _ in range(3):
+    for _ in range(16):
         x, y = random.randint(0, Constants.xCELLS - 4), random.randint(0, Constants.yCELLS - 4)
         Constants.GRAPEVINES.add(Grapevine(x,y))
         

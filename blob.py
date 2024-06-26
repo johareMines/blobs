@@ -117,7 +117,6 @@ class Blob(Organism):
                 newMaxSize = self.maxSize + (monteCarlo("GREATER")[0] * 1.5)
                 newBlob = Blob(self.x, self.y, self.size, maxSpeed=newMaxSpeed, maxSize=newMaxSize)
                 Constants.BORN_BLOBS.append(newBlob)
-                print("birthed {}, {}".format(newMaxSpeed, newMaxSize))
                 self.birthIteration = 200
         else:
             self.birthIteration -= 1

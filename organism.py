@@ -47,6 +47,7 @@ class Organism:
     class walkTypes(Enum):
         RANDOM = "RANDOM"
         FORRAGE = "FORRAGE"
+        MATE = "MATE"
 
 
     # Define methods child classes must define

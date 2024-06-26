@@ -237,8 +237,8 @@ class Simulation:
             Constants.BACKGROUND = Background(85, 50)
             
             
-            self.cpuMonitor = CPUMonitor(1) # one second interval
-            self.cpuMonitor.start()
+            self.performanceMonitor = PerformanceMonitor(20) # Interval in seconds
+            self.performanceMonitor.start()
                 
     @staticmethod
     def get_instance():
@@ -257,6 +257,8 @@ class Simulation:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        Constants.GRAPES = set({})
             
             Constants.SCREEN.fill((255, 255, 255))  # Clear the screen
             Constants.BACKGROUND.draw()
@@ -310,23 +312,23 @@ class Simulation:
             end_time = time.time() 
             frame_time = end_time - start_time
             self.frame_times.append(frame_time)
-            if len(self.frame_times) > 100:
+            if len(self.frame_times) > 200:
                 self.frame_times.pop(0)
             self.calculateFramerate()
             
             
             
-        self.cpuMonitor.stop()
-        self.cpuMonitor.join()
+        self.performanceMonitor.stop()
+        self.performanceMonitor.join()
         pygame.quit()
         sys.exit()
         
         
     def calculateFramerate(self):
-        if time.time() - self.frame_print_time < 1:
+        if time.time() - self.frame_print_time < 20:
             return
         
-        if len(self.frame_times) < 100:
+        if len(self.frame_times) < 200:
             return
             
         avg_frame_time = sum(self.frame_times) / len(self.frame_times)
@@ -337,7 +339,7 @@ class Simulation:
             
     
     
-class CPUMonitor(threading.Thread):
+class PerformanceMonitor(threading.Thread):
     def __init__(self, interval):
         super().__init__()
         self.interval = interval
@@ -346,8 +348,21 @@ class CPUMonitor(threading.Thread):
 
     def run(self):
         while not self.stopped.wait(self.interval):
-            cpu_percent = self.process.cpu_percent()
-            print(f"CPU usage: {cpu_percent}%")
+            self.monitorCPU()
+            self.monitorMemory()
+            self.monitorObjects()
 
+    def monitorCPU(self):
+        cpu_percent = self.process.cpu_percent()
+        print(f"CPU usage: {cpu_percent}%")
+    
+    def monitorMemory(self):
+        memory_info = self.process.memory_info()
+        print(f"Memory Usage: {memory_info.rss / (1024 * 1024)} MB")  # Convert to MB
+    
+    def monitorObjects(self):
+        print(f"Blobs: {len(Constants.BLOBS)} | Berrylopes: {len(Constants.BERRYLOPES)} | Grapevines: {len(Constants.GRAPEVINES)} | Grapes: {len(Constants.GRAPES)}")
+    
     def stop(self):
         self.stopped.set()
+
