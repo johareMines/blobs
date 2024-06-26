@@ -6,6 +6,7 @@ from food import Grapevine
 
 from blob import Blob
 from berrylope import Berrylope
+from particle import Particle
 
 
 
@@ -28,6 +29,10 @@ if __name__ == "__main__":
     for _ in range(16):
         x, y = random.randint(0, Constants.xCELLS - 4), random.randint(0, Constants.yCELLS - 4)
         Constants.GRAPEVINES.add(Grapevine(x,y))
+    
+    for _ in range(300):
+        particle = Particle(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)))
+        Constants.PARTICLES.add(particle)
         
 
     simulation.run()

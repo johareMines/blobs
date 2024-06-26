@@ -2,6 +2,7 @@
 
 class Constants:
     DEVELOPER = True
+    MONITOR_INTERVAL = 10
     BLACK = (0, 0, 0)
     GREEN = (30, 150, 90)
     SCREEN_WIDTH = None
@@ -13,6 +14,8 @@ class Constants:
 
     SCREEN = None
     BACKGROUND = None
+    
+    QUADTREE = None
 
     # ORGANISMS = []
     BORN_BLOBS = []

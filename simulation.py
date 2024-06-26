@@ -9,6 +9,7 @@ from constants import Constants
 from food import Grapevine
 import random
 import math
+from particle import Quadtree
 
 class Background(Drawable):
     GRID = None
@@ -256,7 +257,7 @@ class Simulation:
             Constants.BACKGROUND = Background(128, 75)
             
             
-            self.performanceMonitor = PerformanceMonitor(20) # Interval in seconds
+            self.performanceMonitor = PerformanceMonitor(Constants.MONITOR_INTERVAL) # Interval in seconds
             self.performanceMonitor.start()
                 
     @staticmethod
@@ -268,6 +269,12 @@ class Simulation:
 
     def run(self):
         running = True
+        
+        Constants.QUADTREE = Quadtree(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT)
+        # # Insert particles into the quadtree
+        # for particle in Constants.PARTICLES:
+        #     Constants.QUADTREE.insert(particle)
+        
         while running:
             start_time = time.time() # For framerate calculation
             for event in pygame.event.get():
@@ -281,6 +288,9 @@ class Simulation:
             
             Constants.SCREEN.fill((255, 255, 255))  # Clear the screen
             Constants.BACKGROUND.draw()
+            
+            # Clear quadtree (more efficient than making a new one)
+            Constants.QUADTREE.clear()
 
             for berrylope in Constants.BERRYLOPES:
                 berrylope.update()
@@ -288,8 +298,14 @@ class Simulation:
             for blob in Constants.BLOBS:
                 blob.update()
                 
+            
+            for particle in Constants.PARTICLES:
+                Constants.QUADTREE.insert(particle)
+                
             for particle in Constants.PARTICLES:
                 particle.update()
+                
+            
             
             for grapevine in Constants.GRAPEVINES:
                 grapevine.draw()
@@ -357,7 +373,7 @@ class Simulation:
             print("Mouse x: {} | Mouse y: {}".format(mouse_x, mouse_y))
     
     def calculateFramerate(self):
-        if time.time() - self.frame_print_time < 20:
+        if time.time() - self.frame_print_time < Constants.MONITOR_INTERVAL:
             return
         
         if len(self.frame_times) < 200:
@@ -393,7 +409,7 @@ class PerformanceMonitor(threading.Thread):
         print(f"Memory Usage: {memory_info.rss / (1024 * 1024)} MB")  # Convert to MB
     
     def monitorObjects(self):
-        print(f"Blobs: {len(Constants.BLOBS)} | Berrylopes: {len(Constants.BERRYLOPES)} | Grapevines: {len(Constants.GRAPEVINES)} | Grapes: {len(Constants.GRAPES)}")
+        print(f"Blobs: {len(Constants.BLOBS)} | Berrylopes: {len(Constants.BERRYLOPES)} | Grapevines: {len(Constants.GRAPEVINES)} | Grapes: {len(Constants.GRAPES)} | Particles: {len(Constants.PARTICLES)}")
     
     def stop(self):
         self.stopped.set()

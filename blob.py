@@ -18,7 +18,7 @@ class Blob(Organism):
         
         self.color = (255, 0, 0)
         
-        self.poopIteration, self.POOP_ITERATION = random.randint(0, 800), 800
+        self.poopIteration, self.POOP_ITERATION = random.randint(0, 800), 8000
 
         # spriteImage = pygame.image.load("images/Small.png")
         # spriteImage = spriteImage.convert_alpha()
