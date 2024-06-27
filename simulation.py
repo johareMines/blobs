@@ -9,7 +9,7 @@ from constants import Constants
 from food import Grapevine
 import random
 import math
-from particle import Quadtree
+from particle import Quadtree, Particle
 
 class Background(Drawable):
     GRID = None
@@ -248,13 +248,13 @@ class Simulation:
             Constants.SCREEN_WIDTH = screenInfo.current_w
             Constants.SCREEN_HEIGHT = screenInfo.current_h
 
-            Constants.SCREEN = pygame.display.set_mode((Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), pygame.NOFRAME | pygame.RESIZABLE, display=0)
+            Constants.SCREEN = pygame.display.set_mode((Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), pygame.RESIZABLE | pygame.FULLSCREEN, display=Constants.DISPLAY.value)
             
             self.clock = pygame.time.Clock()
             self.frame_times = []
             self.frame_print_time = time.time()
 
-            Constants.BACKGROUND = Background(128, 75)
+            Constants.BACKGROUND = Background(128, 76)
             
             
             self.performanceMonitor = PerformanceMonitor(Constants.MONITOR_INTERVAL) # Interval in seconds
@@ -271,9 +271,9 @@ class Simulation:
         running = True
         
         Constants.QUADTREE = Quadtree(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT)
-        # # Insert particles into the quadtree
-        # for particle in Constants.PARTICLES:
-        #     Constants.QUADTREE.insert(particle)
+        # Insert particles into the quadtree
+        for particle in Constants.PARTICLES:
+            Constants.QUADTREE.insert(particle)
         
         while running:
             start_time = time.time() # For framerate calculation
@@ -289,8 +289,8 @@ class Simulation:
             Constants.SCREEN.fill((255, 255, 255))  # Clear the screen
             Constants.BACKGROUND.draw()
             
-            # Clear quadtree (more efficient than making a new one)
-            Constants.QUADTREE.clear()
+            # # Clear quadtree (more efficient than making a new one)
+            # Constants.QUADTREE.clear()
 
             for berrylope in Constants.BERRYLOPES:
                 berrylope.update()
@@ -299,13 +299,14 @@ class Simulation:
                 blob.update()
                 
             
-            for particle in Constants.PARTICLES:
-                Constants.QUADTREE.insert(particle)
-                
+            Particle.batchCalcDest(Constants.PARTICLES)
+            
             for particle in Constants.PARTICLES:
                 particle.update()
                 
             
+            for particle in Constants.PARTICLES:
+                Constants.QUADTREE.update(particle)
             
             for grapevine in Constants.GRAPEVINES:
                 grapevine.draw()

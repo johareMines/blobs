@@ -5,9 +5,10 @@ from enum import Enum
 import pygame
 import random
 import math
+import collections
 
 class Quadtree:
-    def __init__(self, x, y, width, height, max_particles=4, depth=0, max_depth=10):
+    def __init__(self, x, y, width, height, max_particles=3, depth=0, max_depth=15):
         self.bounds = pygame.Rect(x, y, width, height)
         self.max_particles = max_particles
         self.particles = []
@@ -17,7 +18,7 @@ class Quadtree:
 
     def subdivide(self):
         x, y, w, h = self.bounds
-        hw, hh = w // 2, h // 2
+        hw, hh = int(w // 2), int(h // 2)
 
         self.nw = Quadtree(x, y, hw, hh, self.max_particles, self.depth + 1, self.max_depth)
         self.ne = Quadtree(x + hw, y, hw, hh, self.max_particles, self.depth + 1, self.max_depth)
@@ -27,13 +28,13 @@ class Quadtree:
         self.divided = True
 
     def insert(self, particle):
-        scaledX = int(particle.x // 5)
-        scaledY = int(particle.y // 5)
         if not self.bounds.collidepoint(particle.x, particle.y):
             return False
 
         if len(self.particles) < self.max_particles or self.depth >= self.max_depth:
             self.particles.append(particle)
+            # if self.depth >= self.max_depth:
+            #     print(self.depth)
             return True
         else:
             if not self.divided:
@@ -55,8 +56,6 @@ class Quadtree:
             return found
 
         for p in self.particles:
-            scaledX = int(p.x // 5)
-            scaledY = int(p.y // 5)
             if range.collidepoint(p.x, p.y):
                 found.append(p)
 
@@ -69,9 +68,6 @@ class Quadtree:
         return found
     
     def update(self, particle):
-        scaledX = int(particle.x // 5)
-        scaledY = int(particle.y // 5)
-        
         # If the particle is still within the current quadtree bounds, do nothing
         if self.bounds.collidepoint(particle.x, particle.y):
             return
@@ -88,12 +84,14 @@ class Quadtree:
             # If the particle cannot be inserted into a child, insert it into this quadtree
             self.insert(particle)
     
+    
+    
 
 class Particle(Organism):
     __particleAttractions = None
     def __init__(self, x, y, maxSpeed=0.6):
         super().__init__(x, y, 2, maxSpeed, 2, deathSize=1)
-        self.maxInfluenceDist = 300
+        self.maxInfluenceDist = 120
         self.minInfluenceDist = 5
         self.setType()
         self.getParticleAttractions()
@@ -120,75 +118,110 @@ class Particle(Organism):
                         Particle.__particleAttractions[p.name][j] = random.uniform(-0.4, 0.4)
                     else:
                         value = random.uniform(-0.4, 0.4)
-                        Particle.__particleAttractions[p.name][j] = value
-                        Particle.__particleAttractions[list(Particle.particleTypes)[j].name][i] = value
+                        Particle.__particleAttractions[p.name][j] = random.uniform(-0.4, 0.4)
+                        Particle.__particleAttractions[list(Particle.particleTypes)[j].name][i] = random.uniform(-0.4, 0.4)
                         
             print(Particle.__particleAttractions)
         
         return Particle.__particleAttractions
         
+        
+    @staticmethod
+    def batchQuery(particles, maxInfluenceDist):
+        supercell_size = maxInfluenceDist
+        supercell_map = collections.defaultdict(list)
+        results = {}
+
+        for p in particles:
+            supercell_x = int(p.x // supercell_size)
+            supercell_y = int(p.y // supercell_size)
+            supercell_map[(supercell_x, supercell_y)].append(p)
+            results[p] = []
+
+        for (scx, scy), particles_in_supercell in supercell_map.items():
+            range_query = pygame.Rect(
+                scx * supercell_size - maxInfluenceDist,
+                scy * supercell_size - maxInfluenceDist,
+                supercell_size + maxInfluenceDist * 2,
+                supercell_size + maxInfluenceDist * 2
+            )
+            found = Constants.QUADTREE.query(range_query, [])
+
+            for p in particles_in_supercell:
+                results[p] = [f for f in found if f != p]
+
+        return results
+
+    @staticmethod
+    def batchCalcDest(particles):
+        if not particles:
+            return  # No particles to process
+
+        # Grab a random particle to determine maxInfluenceDist
+        maxInfluenceDist = next(iter(particles)).maxInfluenceDist  # Assuming all particles have the same maxInfluenceDist
+        influenceTable = Particle.getParticleAttractions()
+        
+        # Batch query the quadtree for all particles using supercells
+        neighbors_dict = Particle.batchQuery(particles, maxInfluenceDist)
+        
+        # Calculate destinations for all particles
+        for particle in particles:
+            finalVelX, finalVelY = 0, 0
+            maxInfluenceDistSquared = maxInfluenceDist ** 2
             
-
-    def calcDest(self):
-        velocities = []
-        finalVelX, finalVelY = 0, 0
-
-        range_query = pygame.Rect(self.x - self.maxInfluenceDist, self.y - self.maxInfluenceDist, self.maxInfluenceDist * 2, self.maxInfluenceDist * 2)
-        neighbors = Constants.QUADTREE.query(range_query, [])
-
-        for p in neighbors:
-            if p is self:
-                continue
-
-            dx = p.x - self.x
-            dy = p.y - self.y
-
-            dist = math.sqrt(dx ** 2 + dy ** 2)
-
-            if dist > self.maxInfluenceDist:
-                continue
-
-            influenceIndex = self.particleTypeByEnum(p.particleType)
-            influenceFactor = Particle.getParticleAttractions()[self.particleType.name][influenceIndex]
-
-            # Make them repel if too close
-            if influenceFactor > 0:
-                if dist < self.minInfluenceDist:
-                    impact = self.minInfluenceDist - dist
-                    impact *= 0.2
-                    influenceFactor -= impact
+            neighbors = neighbors_dict[particle]
+            for p in neighbors:
+                dx = p.x - particle.x
+                dy = p.y - particle.y
+                distSquared = dx ** 2 + dy ** 2
                 
-            influence = influenceFactor * math.exp(-dist / self.maxInfluenceDist)
-
-            dirX = dx / dist if dist != 0 else 0
-            dirY = dy / dist if dist != 0 else 0
-
-            velX = influence * dirX
-            velY = influence * dirY
-
-            velocities.append((velX, velY))
-
-        for v in velocities:
-            finalVelX += v[0]
-            finalVelY += v[1]
-
-        destX, destY = self.x + finalVelX, self.y + finalVelY
-        return (destX, destY)
+                if distSquared > maxInfluenceDistSquared:
+                    continue
+                
+                dist = math.sqrt(distSquared)
+                influenceIndex = particle.particleTypeByEnum(p.particleType)
+                influence = influenceTable[particle.particleType.name][influenceIndex]
+                
+                if influence > 0 and dist < particle.minInfluenceDist:
+                    impact = particle.minInfluenceDist - dist
+                    impact *= 0.4
+                    influence -= impact
+                
+                influence *= math.exp(-dist / maxInfluenceDist)
+                
+                if dist != 0:
+                    dirX = dx / dist
+                    dirY = dy / dist
+                    
+                    finalVelX += influence * dirX
+                    finalVelY += influence * dirY
+            
+            particle.destX = particle.x + finalVelX
+            particle.destY = particle.y + finalVelY
+    
 
     def calcSpeed(self, dist):
-        speedGoal = dist
+        speedGoal = min(dist, self.maxSpeed)
+        self.speed = max(speedGoal, 0)
         
-        if speedGoal > self.maxSpeed:
-            speedGoal = self.maxSpeed
-        if speedGoal < 0:
-            speedGoal = 0
-            
+    def calcBoundaries(self):
+        retX, retY = self.destX, self.destY
+        if self.destX <= 0:
+            retX = 0
+        elif self.destX >= Constants.SCREEN_WIDTH:
+            retX = Constants.SCREEN_WIDTH
         
-        self.speed = speedGoal
+        if self.destY <= 0:
+            retY = 0
+        elif self.destY >= Constants.SCREEN_HEIGHT:
+            retY = Constants.SCREEN_HEIGHT
+        
+        self.destX = retX
+        self.destY = retY
         
     def move(self):
-        destVector = self.calcDest()
-        self.destX, self.destY = destVector
+        # destVector = self.calcDest()
+        # self.destX, self.destY = destVector
 
         self.calcBoundaries()
         dist = self.calcDistance(self.destX, self.destY)
