@@ -3,6 +3,8 @@ from monteCarlo import monteCarlo
 from constants import Constants
 from enum import Enum
 import pygame
+from pygame import Vector2
+import numpy as np
 import random
 import math
 import collections
@@ -125,7 +127,7 @@ class Particle(Organism):
         
         return Particle.__particleAttractions
         
-        
+       
     @staticmethod
     def batchQuery(particles, maxInfluenceDist):
         supercell_size = maxInfluenceDist
@@ -179,6 +181,8 @@ class Particle(Organism):
                     continue
                 
                 dist = math.sqrt(distSquared)
+                
+                
                 influenceIndex = particle.particleTypeByEnum(p.particleType)
                 influence = influenceTable[particle.particleType.name][influenceIndex]
                 
@@ -199,6 +203,140 @@ class Particle(Organism):
             particle.destX = particle.x + finalVelX
             particle.destY = particle.y + finalVelY
     
+    
+    
+    # @staticmethod
+    # def batchCalcDest(particles):
+    #     if not particles:
+    #         return  # No particles to process
+
+    #     # Assuming all particles have the same maxInfluenceDist
+    #     maxInfluenceDist = next(iter(particles)).maxInfluenceDist  # Assuming all particles have the same maxInfluenceDist
+    #     maxInfluenceDistSquared = maxInfluenceDist ** 2
+    #     influenceTable = Particle.getParticleAttractions()
+        
+    #     # Batch query the quadtree for all particles using supercells
+    #     neighbors_dict = Particle.batchQuery(particles, maxInfluenceDist)
+        
+    #     # Extract particle properties into NumPy arrays
+    #     num_particles = len(particles)
+    #     positions = np.zeros((num_particles, 2))
+    #     particle_types = np.zeros(num_particles, dtype=object)
+    #     minInfluenceDist = np.zeros(num_particles)
+
+    #     # for i, particle in enumerate(particles):
+    #     #     positions[i] = (particle.x, particle.y)
+    #     #     particle_types[i] = particle.particleType
+    #     #     minInfluenceDist[i] = particle.minInfluenceDist
+
+    #     # Initialize arrays for final velocities
+    #     finalVelX = np.zeros(num_particles)
+    #     finalVelY = np.zeros(num_particles)
+        
+    #     # Prepare to collect all necessary data for vectorized operations
+    #     all_neighbors = []
+    #     all_dx = []
+    #     all_dy = []
+    #     all_distSquared = []
+    #     all_influence_indices = []
+    #     all_minInfluenceDist = []
+    #     all_particle_indices = []
+
+    #     for i, particle in enumerate(particles):
+    #         neighbors = neighbors_dict[particle]
+            
+    #         if not neighbors:
+    #             continue
+
+    #         # Extract positions and influence indices of neighbors in one step
+    #         neighbor_data = [(p.x, p.y, particle.particleTypeByEnum(p.particleType)) for p in neighbors]
+    #         neighbor_positions = np.array([(data[0], data[1]) for data in neighbor_data])
+    #         influence_indices = np.array([data[2] for data in neighbor_data])
+            
+            
+    #         dx = neighbor_positions[:, 0] - particle.x
+    #         dy = neighbor_positions[:, 1] - particle.y
+    #         distSquared = dx ** 2 + dy ** 2
+
+    #         # Filter out neighbors beyond maxInfluenceDist
+    #         within_distance = distSquared <= maxInfluenceDistSquared
+    #         dx = dx[within_distance]
+    #         dy = dy[within_distance]
+            
+            
+    #         all_neighbors.append(neighbors)
+    #         all_dx.append(dx)
+    #         all_dy.append(dy)
+    #         all_distSquared.append(distSquared)
+    #         all_influence_indices.append(influence_indices)
+    #         all_minInfluenceDist.append(minInfluenceDist[i])
+    #         all_particle_indices.extend([i] * len(dx))
+            
+            
+    #         # neighbor_positions = neighbor_positions[within_distance]
+    #         # influence_indices = influence_indices[within_distance]
+    #         # distSquared = distSquared[within_distance]
+
+    #         # dist = np.sqrt(distSquared)
+
+    #         # # Compute influences
+    #         # influences = np.array([influenceTable[particle.particleType.name][index] for index in influence_indices])
+
+    #         # # Adjust influences based on minimum influence distance
+    #         # close_neighbors = dist < particle.minInfluenceDist
+    #         # impact = particle.minInfluenceDist - dist[close_neighbors]
+    #         # influences[close_neighbors] -= impact * 0.4
+
+    #         # # Apply exponential decay
+    #         # influences *= np.exp(-dist / maxInfluenceDist)
+
+    #         # # Avoid division by zero
+    #         # non_zero_dist = dist != 0
+    #         # dirX = np.zeros_like(dist)
+    #         # dirY = np.zeros_like(dist)
+    #         # dirX[non_zero_dist] = dx[non_zero_dist] / dist[non_zero_dist]
+    #         # dirY[non_zero_dist] = dy[non_zero_dist] / dist[non_zero_dist]
+
+    #         # # Compute final velocities
+    #         # finalVelX[i] = np.sum(influences * dirX)
+    #         # finalVelY[i] = np.sum(influences * dirY)
+    #     # Flatten lists
+    #     all_dx = np.concatenate(all_dx)
+    #     all_dy = np.concatenate(all_dy)
+    #     all_distSquared = np.concatenate(all_distSquared)
+    #     all_influence_indices = np.concatenate(all_influence_indices)
+    #     all_minInfluenceDist = np.array(all_minInfluenceDist)
+    #     all_particle_indices = np.array(all_particle_indices)
+
+    #     # Calculate distances
+    #     dist = np.sqrt(all_distSquared)
+
+    #     # Compute influences
+    #     influences = np.array([influenceTable[particle.particleType.name][index] for index in all_influence_indices])
+
+    #     # Adjust influences based on minimum influence distance
+    #     close_neighbors = dist < all_minInfluenceDist[all_particle_indices]
+    #     impact = all_minInfluenceDist[all_particle_indices][close_neighbors] - dist[close_neighbors]
+    #     influences[close_neighbors] -= impact * 0.4
+
+    #     # Apply exponential decay
+    #     influences *= np.exp(-dist / maxInfluenceDist)
+
+    #     # Avoid division by zero
+    #     non_zero_dist = dist != 0
+    #     dirX = np.zeros_like(dist)
+    #     dirY = np.zeros_like(dist)
+    #     dirX[non_zero_dist] = all_dx[non_zero_dist] / dist[non_zero_dist]
+    #     dirY[non_zero_dist] = all_dy[non_zero_dist] / dist[non_zero_dist]
+
+    #     # Compute final velocities
+    #     np.add.at(finalVelX, all_particle_indices, influences * dirX)
+    #     np.add.at(finalVelY, all_particle_indices, influences * dirY)
+        
+    #     # Update particle destinations
+    #     for i, particle in enumerate(particles):
+    #         particle.destX = particle.x + finalVelX[i]
+    #         particle.destY = particle.y + finalVelY[i]
 
     def calcSpeed(self, dist):
         speedGoal = min(dist, self.maxSpeed)
