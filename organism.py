@@ -73,6 +73,7 @@ class Organism:
         RANDOM = "RANDOM"
         FORRAGE = "FORRAGE"
         MATE = "MATE"
+        SPIN_WEB = "SPIN_WEB"
 
 
     # Define methods child classes must define

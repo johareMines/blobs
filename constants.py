@@ -77,4 +77,7 @@ class Constants:
         y = int(y // Constants.TILE_HEIGHT)
         return (x, y)
     
+    def mapValue(input, inputMin, inputMax, outputMin, outputMax):
+        return outputMin + ((input - inputMin) / (inputMax - inputMin)) * (outputMax - outputMin)
+    
     
