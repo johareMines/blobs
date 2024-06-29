@@ -299,21 +299,27 @@ class Simulation:
                 blob.update()
                 
             
+            
+            for webShooter in Constants.WEB_SHOOTERS:
+                webShooter.update()
+                
+            for spider in Constants.SPIDERS:
+                spider.update()
+            
+            
             Particle.batchCalcDest(Constants.PARTICLES)
             
             for particle in Constants.PARTICLES:
                 particle.update()
-                
             
             for particle in Constants.PARTICLES:
                 Constants.QUADTREE.update(particle)
+            
             
             for grapevine in Constants.GRAPEVINES:
                 grapevine.draw()
                 grapevine.grow()
                 grapevine.growGrape()
-                
-            
                 
             for food in Constants.FOODS:
                 food.draw()

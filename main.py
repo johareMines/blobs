@@ -7,6 +7,7 @@ from food import Grapevine
 from blob import Blob
 from berrylope import Berrylope
 from particle import Particle
+from spider import Spider
 
 
 
@@ -34,5 +35,7 @@ if __name__ == "__main__":
         particle = Particle(random.uniform(0.0, Constants.SCREEN_WIDTH), random.uniform(0.0, Constants.SCREEN_HEIGHT))
         Constants.PARTICLES.add(particle)
         
+    for _ in range(1):
+        Constants.SPIDERS.add(Spider(random.uniform(400, 1200), random.uniform(300, 900), 11))
 
     simulation.run()

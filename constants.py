@@ -31,6 +31,11 @@ class Constants:
     
     PARTICLES = set({})
     
+    SPIDERS = set({})
+    WEB_SHOOTERS = set({})
+    TERMINATED_WEB_SHOOTERS = []
+    
+    
     FOODS = set({})
     GRAPEVINE_ADDED = ((0, 0), False)
     GRAPEVINES = set({})
