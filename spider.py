@@ -13,6 +13,21 @@ class Node():
         self.y = y
         self.attachedNodes = []
 
+
+class WebShooter():
+    def __init__(self, destX, destY, startX, startY):
+        self.destX = destX
+        self.destY = destY
+        self.startX = startX
+        self.startY = startY
+
+        self.dist = math.sqrt(self.dx ** 2 + self.dy ** 2)
+        self.dx = destX - startX
+        self.dy = destY - startY
+
+        self.unitDx = self.dx / self.dist
+        self.unitDy = self.dy / self.dist
+
 class Spider(Organism):
     MINIMUM_JUICE_TO_SPIN = 16
     JUICE_PER_NODE = 2
@@ -203,10 +218,19 @@ class Spider(Organism):
         return nodes
         
         
-    def addNodesRecursively(self, endNode, dist=-1):
+    # def addNodesRecursively(self, dist):
        
-       # When passed in a dist:
-       numSteps = int(dist // Spider.NODE_DISTANCE)
+    #    # When passed in a dist:
+    # #    numSteps = math.ceil(dist / Spider.NODE_DISTANCE)
+
+    #     # Base case
+    #     if dist < Spider.NODE_DISTANCE:
+
+    #     else:
+    #         self.addNodesRecursively(dist - Spider.NODE_DISTANCE)
+
+
+
             
             
     # Figure out where to move to and how to do it, then do it

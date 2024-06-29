@@ -30,7 +30,7 @@ if __name__ == "__main__":
         x, y = random.randint(0, Constants.xCELLS - 4), random.randint(0, Constants.yCELLS - 4)
         Constants.GRAPEVINES.add(Grapevine(x,y))
     
-    for _ in range(400):
+    for _ in range(150):
         particle = Particle(random.uniform(0.0, Constants.SCREEN_WIDTH), random.uniform(0.0, Constants.SCREEN_HEIGHT))
         Constants.PARTICLES.add(particle)
         

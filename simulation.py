@@ -248,13 +248,13 @@ class Simulation:
             Constants.SCREEN_WIDTH = screenInfo.current_w
             Constants.SCREEN_HEIGHT = screenInfo.current_h
 
-            Constants.SCREEN = pygame.display.set_mode((Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), pygame.RESIZABLE | pygame.FULLSCREEN, display=Constants.DISPLAY.value)
+            Constants.SCREEN = pygame.display.set_mode((Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT), pygame.FULLSCREEN | pygame.RESIZABLE, display=Constants.DISPLAY.value)
             
             self.clock = pygame.time.Clock()
             self.frame_times = []
             self.frame_print_time = time.time()
 
-            Constants.BACKGROUND = Background(128, 76)
+            Constants.BACKGROUND = Background(125, 75)
             
             
             self.performanceMonitor = PerformanceMonitor(Constants.MONITOR_INTERVAL) # Interval in seconds
