@@ -234,7 +234,7 @@ class Spider(Organism):
             webDestY = self.y + dy
             
             # self.shootWebStrand(webDestX, webDestY)
-            self.webShooter = WebShooter(webDestX, webDestY, self.x, self.y)
+            self.webShooter = WebShooter(webDestX, webDestY, self.x, self.y, self)
             
             
         
