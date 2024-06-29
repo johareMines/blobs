@@ -35,10 +35,24 @@ class WebShooter():
         self.nodes = []
         
         self.spider = spider
+        
+        print("Shooter spawned, dist: {}".format(self.dist))
+        self.attachNewNode()
     
     def update(self):
         self.move()
         self.draw()
+        
+    
+    def attachNewNode(self):
+        newNode = Node(self.x, self.y)
+        if self.nodes == []:
+            self.nodes.append(newNode)
+        else:
+            self.nodes[-1].attachedNodes.append(newNode)
+            newNode.attachedNodes.append(self.nodes[-1])
+            self.nodes.append(newNode)
+            
     
     # Shift object and add nodes when appropriate
     def move(self):
@@ -47,35 +61,30 @@ class WebShooter():
         
         # Check if distance is far enough to add a node after checking for reached dest
         distToDest = math.sqrt((self.x - self.destX) ** 2 + (self.y - self.destY) ** 2)
-        newNode = Node(self.x, self.y)
         
-        def attachNewNode(self, newNode):
-            self.nodes[-1].attachedNodes.append(newNode)
-            newNode.attachedNodes.append(self.nodes[-1])
-            self.nodes.append(newNode)
-            
-        # Conclude web building
+        # Conclude web building if last node
         if distToDest < Spider.WEB_SHOOTING_SPEED + 1:
             if self in Constants.TERMINATED_WEB_SHOOTERS:
                 print("maybe return bug")
                 return
-            attachNewNode(newNode)
-            self.sendStrandToWeb()
+            self.attachNewNode()
+            self.spider.updateWeb(self.nodes, self.dist)
             Constants.TERMINATED_WEB_SHOOTERS.append(self)
             return
         
-        if distToDest - (len(self.nodes) * Spider.NODE_DISTANCE) < distToDest - Spider.NODE_DISTANCE:
-            # Connect to previous node if it exists
-            if self.nodes == []:
-                self.nodes.append(newNode)
-            else:
-                attachNewNode(newNode)
+        # Attach new node
+        if distToDest + (len(self.nodes) * Spider.NODE_DISTANCE) < self.dist - Spider.NODE_DISTANCE:
+            self.attachNewNode()
 
     def draw(self):
         pygame.draw.circle(Constants.SCREEN, (24, 87, 191), (self.x, self.y), 5)
         
+        # Draw line from start to current dest to give the illusion of shooting
+        pygame.draw.line(Constants.SCREEN, (0, 0, 0), (self.startX, self.startY), (self.x, self.y), 3)
+        
         
     def die(self):
+        self.spider.webShooter = None
         Constants.WEB_SHOOTERS.remove(self)
         
             
@@ -84,43 +93,44 @@ class WebShooter():
 
 class Spider(Organism):
     MINIMUM_JUICE_TO_SPIN = 16
-    JUICE_PER_NODE = 2
-    NODE_DISTANCE = 50
+    JUICE_PER_NODE = 8
+    NODE_DISTANCE = 25
     MAX_WEB_JUNCTION = 5
-    WEB_SHOOTING_SPEED = 1
+    WEB_SHOOTING_SPEED = 3
     
     def __init__(self, x, y, size, maxSpeed=0.3, maxSize=15.0, deathSize=6.0):
         super().__init__(x, y, size, maxSpeed, maxSize, deathSize)
         self.hungerThreshold = 60
         
-        self.webJuice = 100
-        self.makeWebJuiceIteration, self.MAKE_WEB_JUICE_ITERATION = 400, 400
+        self.silk = 100
+        self.makeSilkIteration, self.MAKE_WEB_JUICE_ITERATION = 400, 400
         self.webLength = 0
         self.web = []
         self.webShooter = None
         
+        self.randomDest = None
+        
     
     def update(self):
         super().update()
-        self.makeWebJuice()
-        self.checkWebShooterCompletion()
+        self.makeSilk()
         
     
-    def makeWebJuice(self):
+    def makeSilk(self):
         
-        if self.makeWebJuiceIteration <= 0:
-            if self.hunger <= 35 and self.webJuice < 90:
+        if self.makeSilkIteration <= 0:
+            if self.hunger <= 35 and self.silk < 90:
                 return
             
-            self.webJuice += 10
-            if self.webJuice >= 100:
-                self.webJuice = 100
+            self.silk += 10
+            if self.silk >= 100:
+                self.silk = 100
                 
             self.hunger -= 3
             
-            self.makeWebJuiceIteration = self.MAKE_WEB_JUICE_ITERATION
+            self.makeSilkIteration = self.MAKE_WEB_JUICE_ITERATION
         else:
-            self.makeWebJuiceIteration -= 1
+            self.makeSilkIteration -= 1
     
     
     # Calc how fast to move to destination
@@ -161,15 +171,48 @@ class Spider(Organism):
     # Check stats and determine next move
     def calcBestMovementType(self):
         # TODO: Calc how desperately web is needed
-        if self.webLength < 1000:
+        
+        if self.webShooter is not None:
             self.walkType = self.walkTypes.SPIN_WEB
         else:
-            self.walkType = self.walkTypes.RANDOM
+            if self.randomDest is not None:
+                self.walkType = self.walkTypes.RANDOM
+            else:
+                self.walkType = self.walkTypes.SPIN_WEB
+            
+            
+        
+            
+            
             
     
     #### Walk definitions ####
     def randomWalk(self):
-        pass
+       
+        # Check if destination is in mind
+        if self.randomDest is None:
+            # Choose random node in web to move to
+            possibleNodes = []
+            for strand in self.web:
+                for node in strand:
+                    dist = self.calcDistance(node.x, node.y)
+                    if dist > Spider.NODE_DISTANCE * 1.2 and dist < 100:
+                        possibleNodes.append(node)
+            
+            if possibleNodes == []:
+                return (self.x, self.y)
+            
+            i = random.randint(0, len(possibleNodes)-1)
+            self.randomDest = (possibleNodes[i].x, possibleNodes[i].y)
+        else:
+             # Check if destination reached
+            if self.calcDistance(self.randomDest[0], self.randomDest[1]) < 2:
+                self.randomDest = None
+                return (self.x, self.y)
+        
+        return self.randomDest
+        
+        
     
     def spinWebWalk(self):
         # Don't move if shooting web
@@ -177,11 +220,11 @@ class Spider(Organism):
             return (self.x, self.y)
         
         # Not enough web juice
-        if self.webJuice < self.MINIMUM_JUICE_TO_SPIN:
+        if self.silk < self.MINIMUM_JUICE_TO_SPIN:
             return self.randomWalk()
         
         # Check silk level and determine how far is possible
-        maxNodes = int(self.webJuice // self.JUICE_PER_NODE)
+        maxNodes = int(self.silk // self.JUICE_PER_NODE)
         
         maxWebDist = maxNodes * self.NODE_DISTANCE
         
@@ -218,113 +261,34 @@ class Spider(Organism):
         if potentialNodes == []:
             # Choose coordinate less than maxWebDist away
             maxWebDistSquared = maxWebDist ** 2
-            # dx, dy = (random.randint(int(-maxWebDistSqrt), int(maxWebDistSqrt)) for _ in range(2))
             
             # Choose dy so that total dist can't be greater than maxWebDist
             dx = random.randint(-maxWebDist, maxWebDist)
-            maxDy = math.floor(math.sqrt(maxWebDistSquared - (dx ** 2)))
+            
+            maxDy = math.floor(math.sqrt(maxWebDistSquared - (dx ** 2))) # Pythag theorem
             
             dy = random.randint(-maxDy, maxDy)
-            
-            # debugDist = math.sqrt(dx ** 2 + dy ** 2)
-            # print("Random web, distance: {} | Max Web Distance: {}".format(debugDist, maxWebDist))
-            
             
             webDestX = self.x + dx
             webDestY = self.y + dy
             
             # self.shootWebStrand(webDestX, webDestY)
-            self.webShooter = WebShooter(webDestX, webDestY, self.x, self.y, self)
+            shooter = WebShooter(webDestX, webDestY, self.x, self.y, self)
+            self.webShooter = shooter
+            Constants.WEB_SHOOTERS.add(shooter)
             
             
         
-        return (self.x, self.y)
+        return self.randomWalk()
             
         # index = random.randint(0, len(potentialNodes)-1)
     
     
-    def updateWeb(self, webStrand):
+    def updateWeb(self, webStrand, distAdded):
         self.web.append(webStrand)
+        self.webLength += distAdded
+        
     
-    
-    
-    def checkWebShooterCompletion(self):
-        if self.webShooter in Constants.TERMINATED_WEB_SHOOTERS:
-            self.webShooter = None
-            
-    
-    # def shootWebStrand(self, destX, destY):
-        
-    #     if self.webShooter is not None:
-    #         return
-        
-        
-        
-        
-        # # Calculate distance between start and end points
-        # dist = math.sqrt((destX - self.x) ** 2 + (destY - self.y) ** 2)
-
-        # # Calculate the direction vector
-        # dx = destX - self.x
-        # dy = destY - self.y
-
-        # # Normalize the direction vector
-        # unit_dx = dx / dist
-        # unit_dy = dy / dist
-
-        # # Check if spider is on existing node
-        # # TODO: implement quadtree to make this query better than O(n^2) (Currently iterates through every node in the web @ worst case scenario, loops through every node of every strand)
-        # currentNode = None
-        # nodeFound = False
-        # for strand in self.web:
-        #     if nodeFound:
-        #         break
-        #     for node in strand:
-        #         nodeDist = math.sqrt((node.x - self.x) ** 2 + (node.y - self.y) ** 2)
-                
-        #         # Spider is close enough to existing node
-        #         if nodeDist <= 5:
-        #             currentNode = node
-        #             nodeFound = True
-        #             break
-        
-        # nodes = []
-        # if currentNode is not None:
-        #     nodes.append(currentNode)
-        # else:
-        #     nodes.append(Node(self.x, self.y))
-        # nodes = [(self.x, self.y)]
-
-        # # Step size (distance between nodes)
-        # step_size = 50
-
-        # # Add nodes every 50 units
-        # num_steps = int(dist // step_size)
-        # for step in range(1, num_steps + 1):
-        #     node_x = self.x + step * step_size * unit_dx
-        #     node_y = self.y + step * step_size * unit_dy
-        #     nodes.append((node_x, node_y))
-
-        # # Add the final destination node
-        # nodes.append((destX, destY))
-
-        # return nodes
-        
-        
-    # def addNodesRecursively(self, dist):
-       
-    #    # When passed in a dist:
-    # #    numSteps = math.ceil(dist / Spider.NODE_DISTANCE)
-
-    #     # Base case
-    #     if dist < Spider.NODE_DISTANCE:
-
-    #     else:
-    #         self.addNodesRecursively(dist - Spider.NODE_DISTANCE)
-
-
-      
-            
     # Figure out where to move to and how to do it, then do it
     def move(self):
         destVector = (self.x, self.y)
@@ -360,9 +324,13 @@ class Spider(Organism):
     def draw(self):
         self.drawWeb()
         pygame.draw.circle(Constants.SCREEN, (0, 0, 0), (self.x, self.y), self.size)
+    
         
     def drawWeb(self):
-        pass
+        for strand in self.web:
+            for i in range(len(strand)-1):
+                # Add line between current strand and next strand
+                pygame.draw.line(Constants.SCREEN, (0, 0, 0), (strand[i].x, strand[i].y), (strand[i+1].x, strand[i+1].y), 3)
         
     
     def die(self):

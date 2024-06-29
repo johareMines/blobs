@@ -341,6 +341,10 @@ class Simulation:
                 for i in Constants.DYING_BERRYLOPES:
                     Constants.BERRYLOPES.remove(i)
                 Constants.DYING_BERRYLOPES = []
+            if len(Constants.TERMINATED_WEB_SHOOTERS) > 0:
+                for i in Constants.TERMINATED_WEB_SHOOTERS:
+                    i.die()
+                Constants.TERMINATED_WEB_SHOOTERS = []
             
             # Spawn new organisms
             if len(Constants.BORN_BLOBS) > 0:

@@ -4,7 +4,7 @@ import collections
 
 class Constants:
     DEVELOPER = True
-    MONITOR_INTERVAL = 3
+    MONITOR_INTERVAL = 5
     BLACK = (0, 0, 0)
     GREEN = (30, 150, 90)
     SCREEN_WIDTH = None

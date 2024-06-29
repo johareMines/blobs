@@ -123,7 +123,7 @@ class Particle(Organism):
                         Particle.__particleAttractions[p.name][j] = random.uniform(-0.4, 0.4)
                         Particle.__particleAttractions[list(Particle.particleTypes)[j].name][i] = random.uniform(-0.4, 0.4)
                         
-            print(Particle.__particleAttractions)
+            
         
         return Particle.__particleAttractions
         
