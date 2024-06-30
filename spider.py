@@ -181,10 +181,6 @@ class Spider(Organism):
                 self.walkType = self.walkTypes.SPIN_WEB
             
             
-        
-            
-            
-            
     
     #### Walk definitions ####
     def randomWalk(self):
@@ -234,6 +230,7 @@ class Spider(Organism):
         
         potentialNodes = []
         
+        # ConnectToExistingNode
         if random.randint(0, 1) <= 0:
             
             # Find close web node to attach to
