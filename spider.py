@@ -14,17 +14,16 @@ class Node():
         self.attachedNodes = []
 
 class WebShooter():
-    def __init__(self, destX, destY, startX, startY, spider):
+    def __init__(self, destX, destY, spider):
         self.destX = destX
         self.destY = destY
-        self.startX, self.x = (startX for _ in range(2))
-        self.startY, self.y = (startY for _ in range(2))
-        self.x = startX
-        self.y = startY
+        self.startX, self.x = (spider.x for _ in range(2))
+        self.startY, self.y = (spider.y for _ in range(2))
+        
 
         
-        self.dx = destX - startX
-        self.dy = destY - startY
+        self.dx = destX - self.x
+        self.dy = destY - self.y
         
         self.dist = math.sqrt(self.dx ** 2 + self.dy ** 2)
 
@@ -76,7 +75,8 @@ class WebShooter():
             self.attachNewNode()
 
     def draw(self):
-        pygame.draw.circle(Constants.SCREEN, (24, 87, 191), (self.x, self.y), 5)
+        # Debug circle
+        # pygame.draw.circle(Constants.SCREEN, (24, 87, 191), (self.x, self.y), 5)
         
         # Draw line from start to current dest to give the illusion of shooting
         pygame.draw.line(Constants.SCREEN, (0, 0, 0), (self.startX, self.startY), (self.x, self.y), 3)
@@ -88,35 +88,50 @@ class WebShooter():
         
             
             
+            
+            
+            
+            
+            
+            
+            
+            
+            
         
 
 class Spider(Organism):
     MINIMUM_JUICE_TO_SPIN = 16
-    JUICE_PER_NODE = 8
+    JUICE_PER_NODE = 7
     NODE_DISTANCE = 25
     MAX_WEB_JUNCTION = 5
     WEB_SHOOTING_SPEED = 3
     
-    def __init__(self, x, y, size, maxSpeed=0.3, maxSize=15.0, deathSize=6.0, webSupportTheta=random.randint(35, 50)):
+    def __init__(self, x, y, size, maxSpeed=0.83, maxSize=15.0, deathSize=6.0, webSupportTheta=random.randint(35, 50)):
         super().__init__(x, y, size, maxSpeed, maxSize, deathSize)
         self.hungerThreshold = 60
         
-        self.silk = 100
-        self.makeSilkIteration, self.MAKE_WEB_JUICE_ITERATION = 400, 400
+        self.silk = 10
+        self.makeSilkIteration, self.MAKE_SILK_ITERATION = 150, 150
         self.webLength = 0
         self.maxAnchorStrandLength = Spider.NODE_DISTANCE * 10
         self.web = []
         self.webShooter = None
+        self.maxFireDist = int((100 // Spider.JUICE_PER_NODE) * Spider.NODE_DISTANCE)
+        self.postShotDest = None
         
         self.randomDest = None
         
         self.anchorPoints = None        
         self.anchorPointsCenter = None
         self.anchorPointsCleaned = False
+        self.anchorPointsShot = 0
         self.webCenter = None
         self.webSupportTheta = webSupportTheta
         self.baseWebComplete = False
         self.timesCentered = 0
+        
+        
+        self.hunger = 100
         
     
     def update(self):
@@ -125,7 +140,6 @@ class Spider(Organism):
         
     
     def makeSilk(self):
-        
         if self.makeSilkIteration <= 0:
             if self.hunger <= 35 and self.silk < 90:
                 return
@@ -134,9 +148,9 @@ class Spider(Organism):
             if self.silk >= 100:
                 self.silk = 100
                 
-            self.hunger -= 3
+            self.hunger -= 2
             
-            self.makeSilkIteration = self.MAKE_WEB_JUICE_ITERATION
+            self.makeSilkIteration = self.MAKE_SILK_ITERATION
         else:
             self.makeSilkIteration -= 1
     
@@ -183,8 +197,9 @@ class Spider(Organism):
         # if self.webShooter is not None:
         #     self.walkType = self.walkTypes.SPIN_WEB
         
-        
-        if not self.baseWebComplete:
+        if self.postShotDest is not None:
+            self.walkType = self.walkTypes.GO_TO_POINT
+        elif not self.baseWebComplete:
             self.walkType = self.walkTypes.SPIN_WEB
         else:
             if self.randomDest is not None:
@@ -194,6 +209,15 @@ class Spider(Organism):
             
     
     #### Walk definitions ####
+    def goToPointWalk(self):
+        if self.postShotDest is not None: 
+            if self.calcDistance(self.postShotDest) < 2:
+                self.postShotDest = None
+                return (self.x, self.y)
+            return self.postShotDest
+        
+        ## Add more instances such as this as necessary
+        
     def randomWalk(self):
        
         # Check if destination is in mind
@@ -242,7 +266,7 @@ class Spider(Organism):
                             cleanedPoints.append(p)
                             continue
                         
-                        # Check all accepted points
+                        # Clean self.anchorPoints
                         isCleanPoint = True
                         for cleanP in cleanedPoints:
                             cleanX, cleanY = cleanP[0], cleanP[1]
@@ -253,25 +277,24 @@ class Spider(Organism):
                             thetaDiff = abs(cleanPTheta - pTheta)
                             thetaDiffDegrees = math.degrees(thetaDiff)
                             
-                            print("Theta diff {}".format(thetaDiffDegrees))
                             if thetaDiffDegrees < self.webSupportTheta:
                                 isCleanPoint = False
                         
                         if isCleanPoint:
                             cleanedPoints.append(p)
                             
-                        print(cleanedPoints)
                     
                     self.anchorPoints = cleanedPoints
                     self.anchorPointsCleaned = True
-                            
-                            
-                            
-                else:    
-                    # Starting at the center of the web, shoot supports out
-                    pass
+                    # TODO: Possibly implement reducing webSupportTheta and querying again, probably just leave this trait to natural selection though
                 
-                
+                        
+                # Currently at the center of the web, shoot supports out
+                if self.anchorPointsShot < len(self.anchorPoints):
+                    fireStatus = self.aimAndFire(self.anchorPoints[self.anchorPointsShot])
+                    
+                    if fireStatus == 1 or fireStatus == -1:
+                        self.anchorPointsShot += 1
                 
                 return(self.x, self.y)
         else:
@@ -329,8 +352,7 @@ class Spider(Organism):
                 webDestX = self.x + dx
                 webDestY = self.y + dy
                 
-                # self.shootWebStrand(webDestX, webDestY)
-                shooter = WebShooter(webDestX, webDestY, self.x, self.y, self)
+                shooter = WebShooter(webDestX, webDestY, self)
                 self.webShooter = shooter
                 Constants.WEB_SHOOTERS.add(shooter)
                 
@@ -387,18 +409,45 @@ class Spider(Organism):
         self.anchorPoints = []
         for rock in Constants.ROCKS:
             dist = self.calcDistance(rock[0], rock[1])
-            if dist < self.maxAnchorStrandLength * 1.3:
-                self.anchorPoints.append(rock)
+            if dist < self.maxAnchorStrandLength:
+                rockOffset = (rock[0] + Constants.TILE_WIDTH/2, rock[1] + Constants.TILE_HEIGHT/2)
+                self.anchorPoints.append(rockOffset)
             # print("{}, {}".format(rock[0], rock[1]))
         
         self.timesCentered += 1
         print("anchor points {}".format(self.anchorPoints))
         
         
+        
+    # Check if there is enough silk to shoot a target, then shoot
+    def aimAndFire(self, point):
+        # Return T/F if the shot was successful, -1 for spider skill issue
+        
+        minFireDist = self.calcDistance(point[0], point[1])
+        print(f"min: {minFireDist}, max: {self.maxFireDist}")
+        # Check for impossible shot
+        if self.maxFireDist < minFireDist:
+            print("IMPOSSIBLE SHOT REQUESTED")
+            return -1
+        
+        currentFireDist = (self.silk / Spider.JUICE_PER_NODE) * Spider.NODE_DISTANCE
+        print(f"current: {currentFireDist}, silk: {self.silk}")
+        if currentFireDist < minFireDist:
+            print("More silk required, waiting")
+            return 0
+        
+        # Shot is possible
+        shooter = WebShooter(point[0], point[1], self)
+        self.webShooter = shooter
+        Constants.WEB_SHOOTERS.add(shooter)
+        return 1
+        
+        
     # Add strand to web
     def updateWeb(self, webStrand, distAdded):
         self.web.append(webStrand)
         self.webLength += distAdded
+        self.silk -= (distAdded / Spider.NODE_DISTANCE) * Spider.JUICE_PER_NODE
         
     
     # Figure out where to move to and how to do it, then do it
@@ -407,7 +456,9 @@ class Spider(Organism):
         
         self.calcBestMovementType()
         self.calcSpeed()
-        if self.walkType == self.walkTypes.RANDOM:
+        if self.walkType == self.walkTypes.GO_TO_POINT:
+            destVector = self.goToPointWalk()
+        elif self.walkType == self.walkTypes.RANDOM:
             destVector = self.randomWalk()
         elif self.walkType == self.walkTypes.SPIN_WEB:
             destVector = self.spinWebWalk()
@@ -443,6 +494,7 @@ class Spider(Organism):
         if self.anchorPointsCleaned:
             for ap in self.anchorPoints:
                 pygame.draw.circle(Constants.SCREEN, (200, 100, 20), (ap[0], ap[1]), 5)
+                
         for strand in self.web:
             for i in range(len(strand)-1):
                 # Add line between current strand and next strand

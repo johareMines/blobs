@@ -74,6 +74,7 @@ class Organism:
         FORRAGE = "FORRAGE"
         MATE = "MATE"
         SPIN_WEB = "SPIN_WEB"
+        GO_TO_POINT = "GO_TO_POINT"
 
 
     # Define methods child classes must define
