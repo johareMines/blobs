@@ -106,24 +106,25 @@ class Spider(Organism):
     MAX_WEB_JUNCTION = 5
     WEB_SHOOTING_SPEED = 3
     
-    def __init__(self, x, y, size, maxSpeed=0.83, maxSize=15.0, deathSize=6.0, webSupportTheta=random.randint(35, 50)):
+    def __init__(self, x, y, size, maxSpeed=0.5, maxSize=15.0, deathSize=6.0, webSupportTheta=random.randint(35, 50)):
         super().__init__(x, y, size, maxSpeed, maxSize, deathSize)
         self.hungerThreshold = 60
         
-        self.silk = 10
+        self.silk = 100
         self.makeSilkIteration, self.MAKE_SILK_ITERATION = 150, 150
         self.webLength = 0
         self.maxAnchorStrandLength = Spider.NODE_DISTANCE * 10
         self.web = []
         self.webShooter = None
         self.maxFireDist = int((100 // Spider.JUICE_PER_NODE) * Spider.NODE_DISTANCE)
-        self.postShotDest = None
+        self.goToDest = []
         
         self.randomDest = None
         
         self.anchorPoints = None        
         self.anchorPointsCenter = None
         self.anchorPointsCleaned = False
+        self.navigatedAfterSupports = False
         self.anchorPointsShot = 0
         self.webCenter = None
         self.webSupportTheta = webSupportTheta
@@ -194,10 +195,7 @@ class Spider(Organism):
     def calcBestMovementType(self):
         # TODO: Calc how desperately web is needed
         
-        # if self.webShooter is not None:
-        #     self.walkType = self.walkTypes.SPIN_WEB
-        
-        if self.postShotDest is not None:
+        if len(self.goToDest) > 0:
             self.walkType = self.walkTypes.GO_TO_POINT
         elif not self.baseWebComplete:
             self.walkType = self.walkTypes.SPIN_WEB
@@ -210,11 +208,11 @@ class Spider(Organism):
     
     #### Walk definitions ####
     def goToPointWalk(self):
-        if self.postShotDest is not None: 
-            if self.calcDistance(self.postShotDest) < 2:
-                self.postShotDest = None
+        if len(self.goToDest) > 0: 
+            if self.calcDistance(self.goToDest[0][0], self.goToDest[0][1]) < 2:
+                self.goToDest.pop(0)
                 return (self.x, self.y)
-            return self.postShotDest
+            return self.goToDest[0]
         
         ## Add more instances such as this as necessary
         
@@ -295,6 +293,13 @@ class Spider(Organism):
                     
                     if fireStatus == 1 or fireStatus == -1:
                         self.anchorPointsShot += 1
+                    return(self.x, self.y)
+                
+                # Supports have been made, now navigate to tip and start stringing process
+                if not self.navigatedAfterSupports:
+                    self.goToDest.append((self.web[1][len(self.web[1])-1].x, self.web[1][len(self.web[1])-1].y))
+                    self.navigatedAfterSupports = True
+                    return(self.goToPointWalk())
                 
                 return(self.x, self.y)
         else:
