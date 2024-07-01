@@ -172,7 +172,7 @@ class Background(Drawable):
             iterations += 1
         
         # Add rocks
-        for i in range(5):
+        for i in range(30):
             i = random.randint(1, gridWidth - 2)
             j = random.randint(1, gridHeight - 2)
 
@@ -197,6 +197,7 @@ class Background(Drawable):
                     # print("After: {}".format(Background.GRID[i,j]))
                 elif GRID[i, j] == Constants.ROCK_HEIGHT:
                     Background.GRID[i, j] = (GRID[i, j], "Rock")
+                    Constants.ROCKS.add((int(i * Constants.TILE_WIDTH), int(j * Constants.TILE_HEIGHT)))
                 elif GRID[i, j] == Constants.SNOW_HEIGHT:
                     Background.GRID[i, j] = (GRID[i, j], "Snow")
                 else:

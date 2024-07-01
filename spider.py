@@ -13,7 +13,6 @@ class Node():
         self.y = y
         self.attachedNodes = []
 
-
 class WebShooter():
     def __init__(self, destX, destY, startX, startY, spider):
         self.destX = destX
@@ -98,17 +97,26 @@ class Spider(Organism):
     MAX_WEB_JUNCTION = 5
     WEB_SHOOTING_SPEED = 3
     
-    def __init__(self, x, y, size, maxSpeed=0.3, maxSize=15.0, deathSize=6.0):
+    def __init__(self, x, y, size, maxSpeed=0.3, maxSize=15.0, deathSize=6.0, webSupportTheta=random.randint(35, 50)):
         super().__init__(x, y, size, maxSpeed, maxSize, deathSize)
         self.hungerThreshold = 60
         
         self.silk = 100
         self.makeSilkIteration, self.MAKE_WEB_JUICE_ITERATION = 400, 400
         self.webLength = 0
+        self.maxAnchorStrandLength = Spider.NODE_DISTANCE * 10
         self.web = []
         self.webShooter = None
         
         self.randomDest = None
+        
+        self.anchorPoints = None        
+        self.anchorPointsCenter = None
+        self.anchorPointsCleaned = False
+        self.webCenter = None
+        self.webSupportTheta = webSupportTheta
+        self.baseWebComplete = False
+        self.timesCentered = 0
         
     
     def update(self):
@@ -172,14 +180,17 @@ class Spider(Organism):
     def calcBestMovementType(self):
         # TODO: Calc how desperately web is needed
         
-        if self.webShooter is not None:
+        # if self.webShooter is not None:
+        #     self.walkType = self.walkTypes.SPIN_WEB
+        
+        
+        if not self.baseWebComplete:
             self.walkType = self.walkTypes.SPIN_WEB
         else:
             if self.randomDest is not None:
                 self.walkType = self.walkTypes.RANDOM
             else:
                 self.walkType = self.walkTypes.SPIN_WEB
-            
             
     
     #### Walk definitions ####
@@ -215,72 +226,176 @@ class Spider(Organism):
         if self.webShooter is not None:
             return (self.x, self.y)
         
-        # Not enough web juice
-        if self.silk < self.MINIMUM_JUICE_TO_SPIN:
+        # If initial web is not spun, spin it
+        if not self.baseWebComplete:
+            if self.webCenter is None:
+                if self.anchorPoints is None:
+                    self.findWebSupports()
+                return self.centerOfAnchorPointsWalk()
+            else:
+                # Check if supports list has been cleaned
+                if not self.anchorPointsCleaned:
+                    # Only allow points within theta degrees
+                    cleanedPoints = []
+                    for p in self.anchorPoints:
+                        if cleanedPoints == []:
+                            cleanedPoints.append(p)
+                            continue
+                        
+                        # Check all accepted points
+                        isCleanPoint = True
+                        for cleanP in cleanedPoints:
+                            cleanX, cleanY = cleanP[0], cleanP[1]
+                            
+                            cleanPTheta = math.atan2((cleanY - self.y), (cleanX - self.x))
+                            pTheta = math.atan2((p[1] - self.y), (p[0] - self.x))
+                            
+                            thetaDiff = abs(cleanPTheta - pTheta)
+                            thetaDiffDegrees = math.degrees(thetaDiff)
+                            
+                            print("Theta diff {}".format(thetaDiffDegrees))
+                            if thetaDiffDegrees < self.webSupportTheta:
+                                isCleanPoint = False
+                        
+                        if isCleanPoint:
+                            cleanedPoints.append(p)
+                            
+                        print(cleanedPoints)
+                    
+                    self.anchorPoints = cleanedPoints
+                    self.anchorPointsCleaned = True
+                            
+                            
+                            
+                else:    
+                    # Starting at the center of the web, shoot supports out
+                    pass
+                
+                
+                
+                return(self.x, self.y)
+        else:
+            # Not enough web juice
+            if self.silk < self.MINIMUM_JUICE_TO_SPIN:
+                return self.randomWalk()
+            
+            # Check silk level and determine how far is possible
+            maxNodes = int(self.silk // self.JUICE_PER_NODE)
+            
+            maxWebDist = maxNodes * self.NODE_DISTANCE
+            
+            
+            # Choose to attach to existing node, or make new strand
+            # TODO: think about probability
+            
+            potentialNodes = []
+            
+            # ConnectToExistingNode
+            if random.randint(0, 1) <= 0:
+                
+                # Find close web node to attach to
+                # TODO: use quadtree if applicable
+                
+                for webStrand in self.web:
+                    for node in webStrand:
+                        dist = math.sqrt(node.x ** 2 + node.y ** 2)
+                        
+                        if dist > maxWebDist:
+                            continue
+                        
+                        # Check if node already connected to self
+                        if self in node.attachedNodes:
+                            continue
+                        
+                        potentialNodes.append(node)
+            
+            
+            ## Spin web ##
+            webDestX = None
+            webDestY = None
+            
+            # Spin random web    
+            if potentialNodes == []:
+                # Choose coordinate less than maxWebDist away
+                maxWebDistSquared = maxWebDist ** 2
+                
+                # Choose dy so that total dist can't be greater than maxWebDist
+                dx = random.randint(-maxWebDist, maxWebDist)
+                
+                maxDy = math.floor(math.sqrt(maxWebDistSquared - (dx ** 2))) # Pythag theorem
+                
+                dy = random.randint(-maxDy, maxDy)
+                
+                webDestX = self.x + dx
+                webDestY = self.y + dy
+                
+                # self.shootWebStrand(webDestX, webDestY)
+                shooter = WebShooter(webDestX, webDestY, self.x, self.y, self)
+                self.webShooter = shooter
+                Constants.WEB_SHOOTERS.add(shooter)
+                
+                
+            
             return self.randomWalk()
-        
-        # Check silk level and determine how far is possible
-        maxNodes = int(self.silk // self.JUICE_PER_NODE)
-        
-        maxWebDist = maxNodes * self.NODE_DISTANCE
+                
+            # index = random.randint(0, len(potentialNodes)-1)
         
         
-        # Choose to attach to existing node, or make new strand
-        # TODO: think about probability
+    def centerOfAnchorPointsWalk(self):
+        # Return destination location for spider to navigate to
         
-        potentialNodes = []
-        
-        # ConnectToExistingNode
-        if random.randint(0, 1) <= 0:
-            
-            # Find close web node to attach to
-            # TODO: use quadtree if applicable
-            
-            for webStrand in self.web:
-                for node in webStrand:
-                    dist = math.sqrt(node.x ** 2 + node.y ** 2)
+        # Continue navigation to destination
+        if self.anchorPointsCenter is not None:
+            # Reached destination
+            distToCenter = self.calcDistance(self.anchorPointsCenter[0], self.anchorPointsCenter[1])
+            print(distToCenter)
+            if distToCenter < 2:
+                
+                if self.timesCentered >= 2:
+                    self.webCenter = Node(self.x, self.y)
                     
-                    if dist > maxWebDist:
-                        continue
+                    # Add center to the web - just a node, not a strand
+                    self.web.append([self.webCenter])
                     
-                    # Check if node already connected to self
-                    if self in node.attachedNodes:
-                        continue
+                    print("Found web center {}".format(self.webCenter))
+                else:
+                    self.anchorPoints = None
                     
-                    potentialNodes.append(node)
+                self.anchorPointsCenter = None
+                
+                return (self.x, self.y)
+            
+            
+            return self.anchorPointsCenter
         
         
-        ## Spin web ##
-        webDestX = None
-        webDestY = None
         
-        # Spin random web    
-        if potentialNodes == []:
-            # Choose coordinate less than maxWebDist away
-            maxWebDistSquared = maxWebDist ** 2
-            
-            # Choose dy so that total dist can't be greater than maxWebDist
-            dx = random.randint(-maxWebDist, maxWebDist)
-            
-            maxDy = math.floor(math.sqrt(maxWebDistSquared - (dx ** 2))) # Pythag theorem
-            
-            dy = random.randint(-maxDy, maxDy)
-            
-            webDestX = self.x + dx
-            webDestY = self.y + dy
-            
-            # self.shootWebStrand(webDestX, webDestY)
-            shooter = WebShooter(webDestX, webDestY, self.x, self.y, self)
-            self.webShooter = shooter
-            Constants.WEB_SHOOTERS.add(shooter)
-            
-            
+        # Find location in the middle of given points
+        xAvg, yAvg = 0, 0
+        for p in self.anchorPoints:
+            xAvg += p[0]
+            yAvg += p[1]
         
-        return self.randomWalk()
-            
-        # index = random.randint(0, len(potentialNodes)-1)
-    
-    
+        xAvg, yAvg = xAvg / len(self.anchorPoints), yAvg / len(self.anchorPoints)
+        
+        # print("Average Loc: {}, {}".format(xAvg, yAvg))
+        self.anchorPointsCenter = (xAvg, yAvg)
+        return (xAvg, yAvg)
+        
+    def findWebSupports(self):
+        # Find all rocks that could work as a support
+        self.anchorPoints = []
+        for rock in Constants.ROCKS:
+            dist = self.calcDistance(rock[0], rock[1])
+            if dist < self.maxAnchorStrandLength * 1.3:
+                self.anchorPoints.append(rock)
+            # print("{}, {}".format(rock[0], rock[1]))
+        
+        self.timesCentered += 1
+        print("anchor points {}".format(self.anchorPoints))
+        
+        
+    # Add strand to web
     def updateWeb(self, webStrand, distAdded):
         self.web.append(webStrand)
         self.webLength += distAdded
@@ -324,6 +439,10 @@ class Spider(Organism):
     
         
     def drawWeb(self):
+        # Debug support areas
+        if self.anchorPointsCleaned:
+            for ap in self.anchorPoints:
+                pygame.draw.circle(Constants.SCREEN, (200, 100, 20), (ap[0], ap[1]), 5)
         for strand in self.web:
             for i in range(len(strand)-1):
                 # Add line between current strand and next strand

@@ -44,6 +44,7 @@ class Constants:
 
     WATER_HEIGHT = -12
     ROCK_HEIGHT = -101
+    ROCKS = set({})
     SNOW_HEIGHT = 12
     
     
