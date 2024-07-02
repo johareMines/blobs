@@ -106,7 +106,7 @@ class WebShooter():
 
 class Spider(Organism):
     MINIMUM_JUICE_TO_SPIN = 16
-    JUICE_PER_NODE = 5
+    JUICE_PER_NODE = 6
     NODE_DISTANCE = 30
     MAX_WEB_JUNCTION = 5
     WEB_SHOOTING_SPEED = 3
@@ -116,12 +116,12 @@ class Spider(Organism):
         self.hungerThreshold = 60
         
         self.silk = 100
-        self.makeSilkIteration, self.MAKE_SILK_ITERATION = 50, 50
+        self.makeSilkIteration, self.MAKE_SILK_ITERATION = 30, 30
         self.webLength = 0
         self.web = []
         self.webShooter = None
         self.maxFireDist = int((100 // Spider.JUICE_PER_NODE) * Spider.NODE_DISTANCE)
-        self.maxAnchorStrandLength = self.maxFireDist * 0.85
+        self.maxAnchorStrandLength = self.maxFireDist * 0.65
         self.goToDest = []
         self.webQueue = None
         
@@ -136,7 +136,7 @@ class Spider(Organism):
         self.webCenter = None
         self.webSupportTheta = webSupportTheta
         self.baseWebComplete = False
-        self.timesCentered = 0
+        self.timesCentered, self.MAX_TIMES_CENTERED = 0, 2
         
         
         self.hunger = 100
@@ -149,10 +149,10 @@ class Spider(Organism):
     
     def makeSilk(self):
         if self.makeSilkIteration <= 0:
-            if self.hunger <= 35 or self.silk > 90:
+            if self.hunger <= 35 or self.silk > 98:
                 return
             
-            self.silk += 10
+            self.silk += 2
             if self.silk >= 100:
                 self.silk = 100
                 
@@ -273,7 +273,48 @@ class Spider(Organism):
                 if not self.anchorPointsCleaned:
                     # Only allow points within theta degrees
                     cleanedPoints = []
+                    
+                    
+                    # TODO: find sorting based on theta differences
+                    
+                    thetas = []
                     for p in self.anchorPoints:
+                        thetas.append(math.atan2(p[1] - self.y, p[0] - self.x))
+                            
+                    
+                    rankings = [-1 for _ in range(0, len(thetas))]
+                    rank = 0
+                    while rank < len(thetas):
+                        minTheta = 10
+                        minIndex = -1
+                        for i in range(0, len(thetas)):
+                            # Skip ones that have already been ranked
+                            if rankings[i] != -1:
+                                continue
+                            
+                            if thetas[i] < minTheta:
+                                minTheta = thetas[i]
+                                minIndex = i
+                        
+                        rankings[minIndex] = rank
+                        rank += 1
+                        
+                    # print(f"the {thetas}, rank {rankings}")
+                    
+                    # Create properly ordered list
+                    orderedAnchorPoints = []
+                    rank = 0
+                    while rank < len(thetas):
+                        for i in range(0, len(rankings)):
+                            if rankings[i] == rank:
+                                rank += 1
+                                orderedAnchorPoints.append(self.anchorPoints[i])
+                                continue
+                    
+                    self.anchorPoints = orderedAnchorPoints
+                    
+                    for p in self.anchorPoints:
+                        
                         if cleanedPoints == []:
                             cleanedPoints.append(p)
                             continue
@@ -294,7 +335,8 @@ class Spider(Organism):
                         
                         if isCleanPoint:
                             cleanedPoints.append(p)
-                            
+                    
+                    
                     
                     self.anchorPoints = cleanedPoints
                     self.anchorPointsCleaned = True
@@ -398,16 +440,11 @@ class Spider(Organism):
             startPoint = (self.x, self.y)
             queue = []
             
-            # for i in range(2, len(self.web)):# Add first point not being stood on
-            #     strand = self.web[i]
-            #     queue.append(strand[len(strand)-1])
-            # queue.append(self.web[1][len(self.web[1])-1])
-            
             
             # Calc node count in shortest strand, this determines row count (ignore center at web[0])
             lowestNodeCount = min(len(strand) for strand in self.web[1:])
             
-            for i in range(1, lowestNodeCount):
+            for i in range(1, lowestNodeCount+1):
                 for j in range(2, len(self.web)):
                     strand = self.web[j]
                     queue.append(strand[len(strand)-i])
@@ -429,7 +466,7 @@ class Spider(Organism):
         # Navigate to next anchor point and update queue
         self.goToDest.append((self.webQueue.queue[0].x, self.webQueue.queue[0].y))
         
-        # MOVE DOWN WHEN NEEDED  
+        # If one cycle is complete, move down one node to start the next cycle
         self.anchorPointNavIterator += 1
         if self.anchorPointNavIterator > len(self.anchorPoints):
             print(f"len queue {len(self.webQueue.queue)}")
@@ -452,7 +489,7 @@ class Spider(Organism):
             print(distToCenter)
             if distToCenter < 2:
                 
-                if self.timesCentered >= 2:
+                if self.timesCentered >= self.MAX_TIMES_CENTERED:
                     self.webCenter = Node(self.x, self.y)
                     
                     # Add center to the web - just a node, not a strand
@@ -572,9 +609,10 @@ class Spider(Organism):
         
     def drawWeb(self):
         # Debug support areas
-        if self.anchorPointsCleaned:
-            for ap in self.anchorPoints:
-                pygame.draw.circle(Constants.SCREEN, (200, 100, 20), (ap[0], ap[1]), 5)
+        if Constants.DEVELOPER:
+            if self.anchorPointsCleaned:
+                for ap in self.anchorPoints:
+                    pygame.draw.circle(Constants.SCREEN, (200, 100, 20), (ap[0], ap[1]), 5)
                 
         for strand in self.web:
             for i in range(len(strand)-1):

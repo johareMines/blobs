@@ -20,7 +20,8 @@ class Berrylope(Organism):
         self.randomWaitTimer = -1
         
         self.berries = []
-        self.growIteration = 0
+        self.berriesEaten, self.BERRIES_TO_GROW = 0, 4
+        self.growIteration, self.GROW_ITERATION = 0, 120
         
         self.gender = random.randint(0, 1)
         self.pregnant = False
@@ -29,7 +30,8 @@ class Berrylope(Organism):
         self.noAvailableMates = False
         self.isMating = False
         self.pregnantIteration, self.PREGNANT_ITERATION = pregnantIncubateTime, pregnantIncubateTime
-        self.birthIteration, self.BIRTH_ITERATION = random.randint(0, 30), 600
+        self.BIRTH_ITERATION = 3200
+        self.birthIteration = random.randint(1500, self.BIRTH_ITERATION)
 
         # Sprite image
 
@@ -55,8 +57,8 @@ class Berrylope(Organism):
                 Constants.FOODS.add(berry)
                 self.berries.append(berry)
                 
-                self.hunger -= 15
-                self.growIteration = 50
+                self.hunger -= 120 / self.size
+                self.growIteration = self.GROW_ITERATION
         else:
             self.growIteration -= 1
     
@@ -226,8 +228,12 @@ class Berrylope(Organism):
             if dist < self.size:
                 i.deleteSelf()
                 
-                self.size += 1
-                self.hunger += i.size * 5
+                self.berriesEaten += 1
+                if self.berriesEaten >= self.BERRIES_TO_GROW:
+                    self.size += 1
+                    self.berriesEaten = 0
+                
+                self.hunger += i.size * 3
                 break
     
     def checkProcreate(self):

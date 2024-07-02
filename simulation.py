@@ -286,6 +286,11 @@ class Simulation:
                         running = False
                     elif event.key == pygame.K_BACKSPACE:
                         Constants.GRAPES = set({})
+                    elif event.unicode == '`':
+                        if Constants.DEVELOPER:
+                            Constants.DEVELOPER = False
+                        else:
+                            Constants.DEVELOPER = True
             
             Constants.SCREEN.fill((255, 255, 255))  # Clear the screen
             Constants.BACKGROUND.draw()
