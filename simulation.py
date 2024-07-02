@@ -172,7 +172,7 @@ class Background(Drawable):
             iterations += 1
         
         # Add rocks
-        for i in range(30):
+        for i in range(60):
             i = random.randint(1, gridWidth - 2)
             j = random.randint(1, gridHeight - 2)
 

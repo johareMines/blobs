@@ -75,6 +75,7 @@ class Organism:
         MATE = "MATE"
         SPIN_WEB = "SPIN_WEB"
         GO_TO_POINT = "GO_TO_POINT"
+        HOLD_POSITION = "HOLD_POSITION"
 
 
     # Define methods child classes must define

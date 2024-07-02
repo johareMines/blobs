@@ -30,7 +30,7 @@ class Blob(Organism):
 
     def update(self):
         super().update()
-        self.checkRandomPoop()
+        # self.checkRandomPoop()
 
     # Calc how fast to move to destination
     def calcSpeed(self):

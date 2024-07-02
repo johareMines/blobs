@@ -7,11 +7,16 @@ import math
 import random
 
 class Node():
-    
     def __init__(self, x, y):
         self.x = x
         self.y = y
         self.attachedNodes = []
+
+
+class WebQueue():
+    def __init__(self, startPoint, queue):
+        self.startPoint = startPoint
+        self.queue = queue
 
 class WebShooter():
     def __init__(self, destX, destY, spider):
@@ -101,8 +106,8 @@ class WebShooter():
 
 class Spider(Organism):
     MINIMUM_JUICE_TO_SPIN = 16
-    JUICE_PER_NODE = 7
-    NODE_DISTANCE = 25
+    JUICE_PER_NODE = 5
+    NODE_DISTANCE = 30
     MAX_WEB_JUNCTION = 5
     WEB_SHOOTING_SPEED = 3
     
@@ -111,13 +116,14 @@ class Spider(Organism):
         self.hungerThreshold = 60
         
         self.silk = 100
-        self.makeSilkIteration, self.MAKE_SILK_ITERATION = 150, 150
+        self.makeSilkIteration, self.MAKE_SILK_ITERATION = 50, 50
         self.webLength = 0
-        self.maxAnchorStrandLength = Spider.NODE_DISTANCE * 10
         self.web = []
         self.webShooter = None
         self.maxFireDist = int((100 // Spider.JUICE_PER_NODE) * Spider.NODE_DISTANCE)
+        self.maxAnchorStrandLength = self.maxFireDist * 0.85
         self.goToDest = []
+        self.webQueue = None
         
         self.randomDest = None
         
@@ -126,6 +132,7 @@ class Spider(Organism):
         self.anchorPointsCleaned = False
         self.navigatedAfterSupports = False
         self.anchorPointsShot = 0
+        self.anchorPointNavIterator = 1
         self.webCenter = None
         self.webSupportTheta = webSupportTheta
         self.baseWebComplete = False
@@ -142,14 +149,14 @@ class Spider(Organism):
     
     def makeSilk(self):
         if self.makeSilkIteration <= 0:
-            if self.hunger <= 35 and self.silk < 90:
+            if self.hunger <= 35 or self.silk > 90:
                 return
             
             self.silk += 10
             if self.silk >= 100:
                 self.silk = 100
                 
-            self.hunger -= 2
+            # self.hunger -= 2
             
             self.makeSilkIteration = self.MAKE_SILK_ITERATION
         else:
@@ -195,7 +202,9 @@ class Spider(Organism):
     def calcBestMovementType(self):
         # TODO: Calc how desperately web is needed
         
-        if len(self.goToDest) > 0:
+        if self.webShooter is not None:
+            self.walkType = self.walkTypes.HOLD_POSITION
+        elif len(self.goToDest) > 0:
             self.walkType = self.walkTypes.GO_TO_POINT
         elif not self.baseWebComplete:
             self.walkType = self.walkTypes.SPIN_WEB
@@ -204,17 +213,22 @@ class Spider(Organism):
                 self.walkType = self.walkTypes.RANDOM
             else:
                 self.walkType = self.walkTypes.SPIN_WEB
-            
+        
     
     #### Walk definitions ####
     def goToPointWalk(self):
         if len(self.goToDest) > 0: 
             if self.calcDistance(self.goToDest[0][0], self.goToDest[0][1]) < 2:
+                print("arrived")
                 self.goToDest.pop(0)
                 return (self.x, self.y)
             return self.goToDest[0]
         
         ## Add more instances such as this as necessary
+    
+    
+    def holdPositionWalk(self):
+        return(self.x, self.y)
         
     def randomWalk(self):
        
@@ -301,6 +315,13 @@ class Spider(Organism):
                     self.navigatedAfterSupports = True
                     return(self.goToPointWalk())
                 
+                # TODO: Check if web forms a straight line
+                
+                
+                # Start spinning web connections
+                if not self.baseWebComplete:
+                    self.workOnWebQueue()
+                
                 return(self.x, self.y)
         else:
             # Not enough web juice
@@ -366,6 +387,59 @@ class Spider(Organism):
             return self.randomWalk()
                 
             # index = random.randint(0, len(potentialNodes)-1)
+    
+    
+    # webQueue = [startPoint(x, y), queue(list)]
+    def workOnWebQueue(self):
+        # Check if queue exists, if not generate it
+        if self.webQueue is None:
+            # Assuming spider was just navigated to support edge
+            # Standing at point stored at self.web[1][len(self.web[1])-1]
+            startPoint = (self.x, self.y)
+            queue = []
+            
+            # for i in range(2, len(self.web)):# Add first point not being stood on
+            #     strand = self.web[i]
+            #     queue.append(strand[len(strand)-1])
+            # queue.append(self.web[1][len(self.web[1])-1])
+            
+            
+            # Calc node count in shortest strand, this determines row count (ignore center at web[0])
+            lowestNodeCount = min(len(strand) for strand in self.web[1:])
+            
+            for i in range(1, lowestNodeCount):
+                for j in range(2, len(self.web)):
+                    strand = self.web[j]
+                    queue.append(strand[len(strand)-i])
+                queue.append(self.web[1][len(self.web[1])-i])
+            
+            self.webQueue = WebQueue(startPoint, queue)
+        elif len(self.webQueue.queue) == 0:
+            self.baseWebComplete = True
+            return
+            
+        fireStatus = self.aimAndFire((self.webQueue.queue[0].x, self.webQueue.queue[0].y))
+        
+        if fireStatus == 0:
+            return
+        elif fireStatus == -1:
+            # If the shot is impossible, navigate to the center of the web first
+            self.goToDest.append((self.web[0][0].x, self.web[0][0].y))
+            
+        # Navigate to next anchor point and update queue
+        self.goToDest.append((self.webQueue.queue[0].x, self.webQueue.queue[0].y))
+        
+        # MOVE DOWN WHEN NEEDED  
+        self.anchorPointNavIterator += 1
+        if self.anchorPointNavIterator > len(self.anchorPoints):
+            print(f"len queue {len(self.webQueue.queue)}")
+            if len(self.webQueue.queue) >= len(self.anchorPoints):
+                self.anchorPointNavIterator = 1
+                self.goToDest.append((self.webQueue.queue[len(self.anchorPoints)].x, self.webQueue.queue[len(self.anchorPoints)].y))
+        
+        self.webQueue = WebQueue(self.webQueue.queue[0], self.webQueue.queue[1:])
+             
+    
         
         
     def centerOfAnchorPointsWalk(self):
@@ -461,7 +535,9 @@ class Spider(Organism):
         
         self.calcBestMovementType()
         self.calcSpeed()
-        if self.walkType == self.walkTypes.GO_TO_POINT:
+        if self.walkType == self.walkTypes.HOLD_POSITION:
+            destVector = self.holdPositionWalk()
+        elif self.walkType == self.walkTypes.GO_TO_POINT:
             destVector = self.goToPointWalk()
         elif self.walkType == self.walkTypes.RANDOM:
             destVector = self.randomWalk()
