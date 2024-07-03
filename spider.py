@@ -49,6 +49,14 @@ class WebShooter():
     
     def attachNewNode(self):
         newNode = Node(self.x, self.y)
+        # Check if node exists close to point
+        for strand in self.spider.web:
+            for node in strand:
+                dist = math.sqrt((self.x - node.x) ** 2 + (self.y - node.y) ** 2)
+                if dist < 2:
+                    newNode = node
+                    print("New node dist worked")
+
         if self.nodes == []:
             self.nodes.append(newNode)
         else:
@@ -66,7 +74,7 @@ class WebShooter():
         distToDest = math.sqrt((self.x - self.destX) ** 2 + (self.y - self.destY) ** 2)
         
         # Conclude web building if last node
-        if distToDest < Spider.WEB_SHOOTING_SPEED + 1:
+        if distToDest < Spider.WEB_SHOOTING_SPEED + 0.1:
             if self in Constants.TERMINATED_WEB_SHOOTERS:
                 print("maybe return bug")
                 return
@@ -218,8 +226,7 @@ class Spider(Organism):
     #### Walk definitions ####
     def goToPointWalk(self):
         if len(self.goToDest) > 0: 
-            if self.calcDistance(self.goToDest[0][0], self.goToDest[0][1]) < 2:
-                print("arrived")
+            if self.calcDistance(self.goToDest[0][0], self.goToDest[0][1]) < 1.5:
                 self.goToDest.pop(0)
                 return (self.x, self.y)
             return self.goToDest[0]
@@ -299,7 +306,6 @@ class Spider(Organism):
                         rankings[minIndex] = rank
                         rank += 1
                         
-                    # print(f"the {thetas}, rank {rankings}")
                     
                     # Create properly ordered list
                     orderedAnchorPoints = []
@@ -469,7 +475,6 @@ class Spider(Organism):
         # If one cycle is complete, move down one node to start the next cycle
         self.anchorPointNavIterator += 1
         if self.anchorPointNavIterator > len(self.anchorPoints):
-            print(f"len queue {len(self.webQueue.queue)}")
             if len(self.webQueue.queue) >= len(self.anchorPoints):
                 self.anchorPointNavIterator = 1
                 self.goToDest.append((self.webQueue.queue[len(self.anchorPoints)].x, self.webQueue.queue[len(self.anchorPoints)].y))
@@ -486,7 +491,6 @@ class Spider(Organism):
         if self.anchorPointsCenter is not None:
             # Reached destination
             distToCenter = self.calcDistance(self.anchorPointsCenter[0], self.anchorPointsCenter[1])
-            print(distToCenter)
             if distToCenter < 2:
                 
                 if self.timesCentered >= self.MAX_TIMES_CENTERED:
@@ -494,8 +498,6 @@ class Spider(Organism):
                     
                     # Add center to the web - just a node, not a strand
                     self.web.append([self.webCenter])
-                    
-                    print("Found web center {}".format(self.webCenter))
                 else:
                     self.anchorPoints = None
                     
@@ -528,10 +530,8 @@ class Spider(Organism):
             if dist < self.maxAnchorStrandLength:
                 rockOffset = (rock[0] + Constants.TILE_WIDTH/2, rock[1] + Constants.TILE_HEIGHT/2)
                 self.anchorPoints.append(rockOffset)
-            # print("{}, {}".format(rock[0], rock[1]))
         
         self.timesCentered += 1
-        print("anchor points {}".format(self.anchorPoints))
         
         
         
@@ -540,16 +540,13 @@ class Spider(Organism):
         # Return T/F if the shot was successful, -1 for spider skill issue
         
         minFireDist = self.calcDistance(point[0], point[1])
-        print(f"min: {minFireDist}, max: {self.maxFireDist}")
         # Check for impossible shot
         if self.maxFireDist < minFireDist:
             print("IMPOSSIBLE SHOT REQUESTED")
             return -1
         
         currentFireDist = (self.silk / Spider.JUICE_PER_NODE) * Spider.NODE_DISTANCE
-        print(f"current: {currentFireDist}, silk: {self.silk}")
         if currentFireDist < minFireDist:
-            print("More silk required, waiting")
             return 0
         
         # Shot is possible
@@ -563,7 +560,9 @@ class Spider(Organism):
     def updateWeb(self, webStrand, distAdded):
         self.web.append(webStrand)
         self.webLength += distAdded
-        self.silk -= (distAdded / Spider.NODE_DISTANCE) * Spider.JUICE_PER_NODE
+        silkCost = (distAdded / Spider.NODE_DISTANCE) * Spider.JUICE_PER_NODE
+        self.silk -= silkCost
+        print(f"Shot of distance {distAdded} completed, price={silkCost} silk")
         
     
     # Figure out where to move to and how to do it, then do it

@@ -14,7 +14,7 @@ from spider import Spider
 
 if __name__ == "__main__":
     simulation = Simulation.get_instance()
-    for _ in range(100):
+    for _ in range(10):
         blob = Blob(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)), 10)
         Constants.BLOBS.add(blob)
     
@@ -33,7 +33,7 @@ if __name__ == "__main__":
         x, y = random.randint(0, Constants.xCELLS - 4), random.randint(0, Constants.yCELLS - 4)
         Constants.GRAPEVINES.add(Grapevine(x,y))
     
-    for _ in range(650):
+    for _ in range(150):
         particle = Particle(random.uniform(0.0, Constants.SCREEN_WIDTH), random.uniform(0.0, Constants.SCREEN_HEIGHT))
         Constants.PARTICLES.add(particle)
         
