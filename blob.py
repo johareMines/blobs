@@ -20,7 +20,7 @@ class Blob(Organism):
         self.color = (255, 0, 0)
         
         self.poopIteration, self.POOP_ITERATION = random.randint(0, 800), 800
-        self.spriteIteration, self.SPRITE_ITERATION = random.randint(0, 200), 200
+        self.spriteIteration, self.SPRITE_ITERATION = random.randint(0, 130), 130
         self.spritesheetLength = 6
         self.sprites = []
         self.currentSprite = None
@@ -44,10 +44,9 @@ class Blob(Organism):
             spriteImage = spriteImage.convert_alpha()
             
             # Scale image
-            scaledWidth = size
-            scaledHeight = size
+            # scaledWidth, scaledHeight = size * 2, size * 2
 
-            self.sprites.append(pygame.transform.scale(spriteImage, (scaledWidth, scaledHeight)))
+            self.sprites.append(spriteImage)#pygame.transform.scale(spriteImage, (scaledWidth, scaledHeight)))
         
     
         
@@ -232,9 +231,10 @@ class Blob(Organism):
             pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.destX, self.destY), 2)
 
         
-        spriteWidth, spriteHeight = self.currentSprite.get_rect().size
-
-        Constants.SCREEN.blit(self.currentSprite, (self.x - spriteWidth / 2, self.y - spriteHeight / 2))
+        spriteWidth, spriteHeight = [self.size * 2 for _ in range(2)]#self.currentSprite.get_rect().size
+        
+        
+        Constants.SCREEN.blit(pygame.transform.scale(self.currentSprite, (spriteWidth, spriteHeight)), (self.x - spriteWidth / 2, self.y - spriteHeight / 2))
 
     
     def die(self):

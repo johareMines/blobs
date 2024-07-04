@@ -55,7 +55,6 @@ class WebShooter():
                 dist = math.sqrt((self.x - node.x) ** 2 + (self.y - node.y) ** 2)
                 if dist < 2:
                     newNode = node
-                    print("New node dist worked")
 
         if self.nodes == []:
             self.nodes.append(newNode)
