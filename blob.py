@@ -3,6 +3,7 @@ from particle import Particle
 from monteCarlo import monteCarlo
 from constants import Constants
 import pygame
+import os
 import random
 
 
@@ -19,17 +20,54 @@ class Blob(Organism):
         self.color = (255, 0, 0)
         
         self.poopIteration, self.POOP_ITERATION = random.randint(0, 800), 800
+        self.spriteIteration, self.SPRITE_ITERATION = random.randint(0, 200), 200
+        self.spritesheetLength = 6
+        self.sprites = []
+        self.currentSprite = None
+        self.framesPerSprite = self.SPRITE_ITERATION // self.spritesheetLength
 
-        # spriteImage = pygame.image.load("images/Small.png")
-        # spriteImage = spriteImage.convert_alpha()
 
-        # scaledWidth = size
-        # scaledHeight = size
+        # Get the directory of the main file
+        mainDir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Construct path to sprites folder
+        spritesDir = os.path.join(mainDir, "images", "Gloob")
+        
+        baseSpriteName = "bloob_down"
+        # Setup all sprite images
+        for i in range(1, self.spritesheetLength + 1):
+            spriteName = baseSpriteName + "{}.png".format(i)
+            fullSpritePath = os.path.join(spritesDir, spriteName)
+            
+            # Load image
+            spriteImage = pygame.image.load(fullSpritePath)
+            spriteImage = spriteImage.convert_alpha()
+            
+            # Scale image
+            scaledWidth = size
+            scaledHeight = size
 
-        # self.scaledImage = pygame.transform.scale(spriteImage, (scaledWidth, scaledHeight))
+            self.sprites.append(pygame.transform.scale(spriteImage, (scaledWidth, scaledHeight)))
+        
+    
+        
+        
+    # Change sprite periodically
+    def changeSprite(self):
+        spriteIndex = self.spriteIteration // self.framesPerSprite
+        
+        if spriteIndex >= self.spritesheetLength:
+            self.spriteIteration = 0
+            spriteIndex = self.spriteIteration // self.framesPerSprite
+        
+        self.currentSprite = self.sprites[spriteIndex]
+        
+        self.spriteIteration += 1
 
     def update(self):
+        self.changeSprite()
         super().update()
+        
         # self.checkRandomPoop()
 
     # Calc how fast to move to destination
@@ -194,9 +232,9 @@ class Blob(Organism):
             pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.destX, self.destY), 2)
 
         
-        # spriteWidth, spriteHeight = self.scaledImage.get_rect().size
+        spriteWidth, spriteHeight = self.currentSprite.get_rect().size
 
-        # screen.blit(self.scaledImage, (self.x - spriteWidth / 2, self.y - spriteHeight / 2))
+        Constants.SCREEN.blit(self.currentSprite, (self.x - spriteWidth / 2, self.y - spriteHeight / 2))
 
     
     def die(self):
