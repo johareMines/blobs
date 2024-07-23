@@ -1,4 +1,4 @@
-from organism import Organism
+from blobs.Organisms.organism import Organism
 from monteCarlo import monteCarlo
 from constants import Constants
 from enum import Enum

@@ -1,4 +1,4 @@
-from organism import Organism
+from Organisms.organism import Organism
 
 from constants import Constants
 from monteCarlo import monteCarlo
@@ -39,7 +39,7 @@ class WebShooter():
         
         self.spider = spider
         
-        print("Shooter spawned, dist: {}".format(self.dist))
+        # print("Shooter spawned, dist: {}".format(self.dist))
         self.attachNewNode()
     
     def update(self):
@@ -100,15 +100,7 @@ class WebShooter():
         
             
             
-            
-            
-            
-            
-            
-            
-            
-            
-            
+#########
         
 
 class Spider(Organism):
@@ -281,8 +273,7 @@ class Spider(Organism):
                     cleanedPoints = []
                     
                     
-                    # TODO: find sorting based on theta differences
-                    
+                    # Sort based on angle from spider
                     thetas = []
                     for p in self.anchorPoints:
                         thetas.append(math.atan2(p[1] - self.y, p[0] - self.x))
@@ -561,7 +552,7 @@ class Spider(Organism):
         self.webLength += distAdded
         silkCost = (distAdded / Spider.NODE_DISTANCE) * Spider.JUICE_PER_NODE
         self.silk -= silkCost
-        print(f"Shot of distance {distAdded} completed, price={silkCost} silk")
+        # print(f"Shot of distance {distAdded} completed, price={silkCost} silk")
         
     
     # Figure out where to move to and how to do it, then do it

@@ -35,7 +35,7 @@ class FoodHerbivore(Food, Drawable):
 
     def draw(self):
         pygame.draw.circle(Constants.SCREEN, self.color, (self.x, self.y), self.size)
-        pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.x, self.y), self.size, 1)
+        pygame.draw.circle(Constants.SCREEN, (0, 0, 0), (self.x, self.y), self.size, 1)
     
 
 class Grapevine(Food, Drawable):
@@ -134,4 +134,4 @@ class Grape(Food, Drawable):
     
     def draw(self):
         pygame.draw.circle(Constants.SCREEN, self.color, (self.x, self.y), self.size)
-        pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.x, self.y), self.size, 1)
+        pygame.draw.circle(Constants.SCREEN, (0, 0, 0), (self.x, self.y), self.size, 1)

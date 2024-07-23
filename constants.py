@@ -1,12 +1,11 @@
 from enum import Enum
 import pygame
+import os
 import collections
 
 class Constants:
     DEVELOPER = True
     MONITOR_INTERVAL = 5
-    BLACK = (0, 0, 0)
-    GREEN = (30, 150, 90)
     SCREEN_WIDTH = None
     SCREEN_HEIGHT = None
     TILE_WIDTH = None
@@ -16,20 +15,24 @@ class Constants:
 
     SCREEN = None
     BACKGROUND = None
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     
     QUADTREE = None
+
+
+    PLAYER = None
 
     # ORGANISMS = []
     BORN_BLOBS = []
     DYING_BLOBS = []
     BLOBS = set({})
     
+    
     BORN_BERRYLOPES = []
     DYING_BERRYLOPES = []
     MATING_BERRYLOPES = []
     BERRYLOPES = set({})
-    
-    PARTICLES = set({})
     
     SPIDERS = set({})
     WEB_SHOOTERS = set({})

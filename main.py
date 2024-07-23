@@ -4,10 +4,11 @@ from constants import Constants
 from food import FoodHerbivore
 from food import Grapevine
 
-from blob import Blob
-from berrylope import Berrylope
-from particle import Particle
-from spider import Spider
+from Organisms.blob import Blob
+from Organisms.berrylope import Berrylope
+# from particle import Particle
+from Organisms.spider import Spider
+from Player.player import Player
 
 
 
@@ -31,11 +32,13 @@ if __name__ == "__main__":
         x, y = random.randint(0, Constants.xCELLS - 4), random.randint(0, Constants.yCELLS - 4)
         Constants.GRAPEVINES.add(Grapevine(x,y))
     
-    for _ in range(150):
-        particle = Particle(random.uniform(0.0, Constants.SCREEN_WIDTH), random.uniform(0.0, Constants.SCREEN_HEIGHT))
-        Constants.PARTICLES.add(particle)
+    # for _ in range(150):
+    #     particle = Particle(random.uniform(0.0, Constants.SCREEN_WIDTH), random.uniform(0.0, Constants.SCREEN_HEIGHT))
+    #     Constants.PARTICLES.add(particle)
         
-    for _ in range(1):
+    for _ in range(2):
         Constants.SPIDERS.add(Spider(random.uniform(400, 1200), random.uniform(300, 900), 11))
+
+    
 
     simulation.run()

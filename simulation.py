@@ -7,9 +7,11 @@ import numpy as np
 from drawable import Drawable
 from constants import Constants
 from food import Grapevine
+from Player.player import Player
 import random
 import math
-from particle import Quadtree, Particle
+from exceptions import SingletonMultipleInstantiationException
+# from particle import Quadtree, Particle
 
 class Background(Drawable):
     GRID = None
@@ -237,7 +239,7 @@ class Simulation:
     __instance = None
     def __init__(self, width=1920, height=1080):
         if Simulation.__instance is not None:
-            raise Exception("Singleton can't be instantiated multiple times.")
+            raise SingletonMultipleInstantiationException()#Exception("Singleton can't be instantiated multiple times.")
         else:
             pygame.init()
 
@@ -260,6 +262,16 @@ class Simulation:
             
             self.performanceMonitor = PerformanceMonitor(Constants.MONITOR_INTERVAL) # Interval in seconds
             self.performanceMonitor.start()
+
+            self.playerKeyMappings = {
+                pygame.K_w: "up",
+                pygame.K_s: "down",
+                pygame.K_a: "left",
+                pygame.K_d: "right"
+            }
+
+            # Setup game variables
+            Constants.PLAYER = Player.getInstance()
                 
     @staticmethod
     def get_instance():
@@ -268,13 +280,21 @@ class Simulation:
             Simulation.__instance = Simulation()
         return Simulation.__instance
 
+    # Handle keyboard press
+    def playerKeyDown(self, input):
+        Constants.PLAYER_INPUTS[input] = 1
+        
+
+    def playerKeyUp(self, input):
+        pass
+
     def run(self):
         running = True
         
-        Constants.QUADTREE = Quadtree(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT)
+        # Constants.QUADTREE = Quadtree(0, 0, Constants.SCREEN_WIDTH, Constants.SCREEN_HEIGHT)
         # Insert particles into the quadtree
-        for particle in Constants.PARTICLES:
-            Constants.QUADTREE.insert(particle)
+        # for particle in Constants.PARTICLES:
+        #     Constants.QUADTREE.insert(particle)
         
         while running:
             start_time = time.time() # For framerate calculation
@@ -291,6 +311,14 @@ class Simulation:
                             Constants.DEVELOPER = False
                         else:
                             Constants.DEVELOPER = True
+
+                    elif event.key in self.playerKeyMappings:
+                        Player.getInstance().playerInputs[self.playerKeyMappings[event.key]] = 1
+                        print(f"Keydown {Player.getInstance().playerInputs}")
+                elif event.type == pygame.KEYUP:
+                    if event.key in self.playerKeyMappings:
+                        Player.getInstance().playerInputs[self.playerKeyMappings[event.key]] = 0
+                        print(f"Keyup {Player.getInstance().playerInputs}")
             
             Constants.SCREEN.fill((255, 255, 255))  # Clear the screen
             Constants.BACKGROUND.draw()
@@ -313,13 +341,13 @@ class Simulation:
                 spider.update()
             
             
-            Particle.batchCalcDest(Constants.PARTICLES)
+            # Particle.batchCalcDest(Constants.PARTICLES)
             
-            for particle in Constants.PARTICLES:
-                particle.update()
+            # for particle in Constants.PARTICLES:
+            #     particle.update()
             
-            for particle in Constants.PARTICLES:
-                Constants.QUADTREE.update(particle)
+            # for particle in Constants.PARTICLES:
+            #     Constants.QUADTREE.update(particle)
             
             
             for grapevine in Constants.GRAPEVINES:
@@ -362,6 +390,10 @@ class Simulation:
                     Constants.BERRYLOPES.add(i)
                 Constants.BORN_BERRYLOPES = []
                 
+
+            Constants.PLAYER.update()
+
+
             # Draw circle at mouse position
             # self.drawMouseCircle()
             
@@ -426,7 +458,7 @@ class PerformanceMonitor(threading.Thread):
         print(f"Memory Usage: {memory_info.rss / (1024 * 1024)} MB")  # Convert to MB
     
     def monitorObjects(self):
-        print(f"Blobs: {len(Constants.BLOBS)} | Berrylopes: {len(Constants.BERRYLOPES)} | Grapevines: {len(Constants.GRAPEVINES)} | Grapes: {len(Constants.GRAPES)} | Particles: {len(Constants.PARTICLES)}")
+        print(f"Blobs: {len(Constants.BLOBS)} | Berrylopes: {len(Constants.BERRYLOPES)} | Grapevines: {len(Constants.GRAPEVINES)} | Grapes: {len(Constants.GRAPES)}")# | Particles: {len(Constants.PARTICLES)}")
     
     def stop(self):
         self.stopped.set()

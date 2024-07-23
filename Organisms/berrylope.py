@@ -1,4 +1,4 @@
-from organism import Organism
+from Organisms.organism import Organism
 from monteCarlo import monteCarlo
 from constants import Constants
 import pygame
@@ -315,14 +315,14 @@ class Berrylope(Organism):
 
     
     def draw(self):
-        pygame.draw.circle(Constants.SCREEN, Constants.GREEN, (self.x, self.y), self.size)
-        pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.x, self.y), self.size, 2)
+        pygame.draw.circle(Constants.SCREEN, (25, 230, 70), (self.x, self.y), self.size)
+        pygame.draw.circle(Constants.SCREEN, (0, 0, 0), (self.x, self.y), self.size, 2)
         
         if self.gender == 0:
-            pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.x, self.y), 5)
+            pygame.draw.circle(Constants.SCREEN, (0, 0, 0), (self.x, self.y), 5)
 
         if Constants.DEVELOPER:
-            pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.destX, self.destY), 2)
+            pygame.draw.circle(Constants.SCREEN, (0, 0, 0), (self.destX, self.destY), 2)
             
     def die(self):
         for berry in self.berries:

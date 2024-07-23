@@ -1,5 +1,5 @@
-from organism import Organism
-from particle import Particle
+from Organisms.organism import Organism
+# from particle import Particle
 from monteCarlo import monteCarlo
 from constants import Constants
 import pygame
@@ -26,12 +26,9 @@ class Blob(Organism):
         self.currentSprite = None
         self.framesPerSprite = self.SPRITE_ITERATION // self.spritesheetLength
 
-
-        # Get the directory of the main file
-        mainDir = os.path.dirname(os.path.abspath(__file__))
         
         # Construct path to sprites folder
-        spritesDir = os.path.join(mainDir, "images", "Gloob")
+        spritesDir = os.path.join(Constants.BASE_DIR, "images", "Gloob")
         
         baseSpriteName = "bloob_down"
         # Setup all sprite images
@@ -43,9 +40,6 @@ class Blob(Organism):
             spriteImage = pygame.image.load(fullSpritePath)
             spriteImage = spriteImage.convert_alpha()
             
-            # Scale image
-            # scaledWidth, scaledHeight = size * 2, size * 2
-
             self.sprites.append(spriteImage)#pygame.transform.scale(spriteImage, (scaledWidth, scaledHeight)))
         
     
@@ -114,7 +108,6 @@ class Blob(Organism):
         return (first, second)
     
     def forageWalk(self):
-
         if self.forageIteration == 0:
             # Find closest food
             self.closestFood = None
@@ -173,14 +166,15 @@ class Blob(Organism):
             self.birthIteration -= 1
     
     # Poop a particle sometimes
-    def checkRandomPoop(self):
-        if self.poopIteration <= 0:
-            # Chance to poo
-            if random.random() > 0.65:
-                Constants.PARTICLES.add(Particle(self.x, self.y))
-            self.poopIteration = self.POOP_ITERATION
-        else:
-            self.poopIteration -= 1
+    # TODO: Rework
+    # def checkRandomPoop(self):
+    #     if self.poopIteration <= 0:
+    #         # Chance to poo
+    #         if random.random() > 0.65:
+    #             Constants.PARTICLES.add(Particle(self.x, self.y))
+    #         self.poopIteration = self.POOP_ITERATION
+    #     else:
+    #         self.poopIteration -= 1
 
     # Figure out where to move to and how to do it, then do it
     def move(self):
@@ -223,12 +217,12 @@ class Blob(Organism):
             self.y += velY
     
     def draw(self):
-        pygame.draw.circle(Constants.SCREEN, self.color, (self.x, self.y), self.size)
-        pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.x, self.y), self.size, 2)
+        # pygame.draw.circle(Constants.SCREEN, self.color, (self.x, self.y), self.size)
+        # pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.x, self.y), self.size, 2)
 
 
-        if Constants.DEVELOPER:
-            pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.destX, self.destY), 2)
+        # if Constants.DEVELOPER:
+        #     pygame.draw.circle(Constants.SCREEN, Constants.BLACK, (self.destX, self.destY), 2)
 
         
         spriteWidth, spriteHeight = [self.size * 2 for _ in range(2)]#self.currentSprite.get_rect().size
@@ -238,5 +232,4 @@ class Blob(Organism):
 
     
     def die(self):
-        # Constants.BLOBS.remove(self) # Can't remove while iterating through blob set
         Constants.DYING_BLOBS.append(self)
