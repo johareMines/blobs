@@ -11,7 +11,12 @@ from Player.player import Player
 import random
 import math
 from exceptions import SingletonMultipleInstantiationException
-# from particle import Quadtree, Particle
+
+from constants import Constants
+from food import Grapevine
+from Organisms.blob import Blob
+from Organisms.berrylope import Berrylope
+from Organisms.spider import Spider
 
 class Background(Drawable):
     GRID = None
@@ -270,7 +275,29 @@ class Simulation:
                 pygame.K_d: "right"
             }
 
-            # Setup game variables
+
+            # Setup game objects
+            for _ in range(10):
+                blob = Blob(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)), 10)
+                Constants.BLOBS.add(blob)
+            
+            for _ in range(5):
+                berrylope = Berrylope(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)), 25)
+                Constants.BERRYLOPES.add(berrylope)
+            
+            # for _ in range(20):
+            #     foodHerbivore = FoodHerbivore(random.uniform(0.0, float(Constants.SCREEN_WIDTH)), random.uniform(0.0, float(Constants.SCREEN_HEIGHT)))
+            #     Constants.FOODS.add(foodHerbivore)
+
+
+            for _ in range(4):
+                x, y = random.randint(0, Constants.xCELLS - 4), random.randint(0, Constants.yCELLS - 4)
+                Constants.GRAPEVINES.add(Grapevine(x,y))
+        
+            for _ in range(2):
+                Constants.SPIDERS.add(Spider(random.uniform(400, 1200), random.uniform(300, 900), 11))
+
+            
             Constants.PLAYER = Player.getInstance()
                 
     @staticmethod
